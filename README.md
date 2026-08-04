@@ -148,17 +148,17 @@ http://localhost:3001
 docker compose down
 ```
 
-注意：当前 `docker-compose.yml` 仍保留了一些原项目的旧模型服务环境变量。使用当前火山引擎工作流时，请确保容器至少能拿到以下变量：
+使用当前火山引擎工作流时，请确保容器至少能拿到以下变量：
 
 ```env
 ARK_API_KEY=...
 TOS_ACCESS_KEY_ID=...
 TOS_SECRET_ACCESS_KEY=...
-TOS_REGION=cn-shanghai
-TOS_ENDPOINT=tos-cn-shanghai.volces.com
-TOS_BUCKET=arkclaw--tsaoyang
-TOS_VIDEO_PREFIX=twitcanva/video
-TOS_PUBLIC_BASE_URL=https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com
+TOS_REGION=
+TOS_ENDPOINT=
+TOS_BUCKET=
+TOS_VIDEO_PREFIX=
+TOS_PUBLIC_BASE_URL=
 ```
 
 Compose 会挂载本地素材目录：
