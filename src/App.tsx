@@ -652,11 +652,24 @@ export default function App() {
     // Shift Amount: Move everything to the right of the group with a gap
     const GAP_X = 100;
     const xOffset = groupMaxX + GAP_X - groupMinX;
+    const isSeedanceModel = settings.model.startsWith('seedance-');
+    const orderedReferenceNodes = [...sourceNodes]
+      .filter(node => node.type === NodeType.IMAGE && node.resultUrl)
+      .sort((a, b) => a.x - b.x);
 
     sourceNodes.forEach((sourceNode) => {
       // Create a new Video node for each image
       const newNodeId = crypto.randomUUID();
-      const PROMPT = prompts[sourceNode.id] || sourceNode.prompt || 'Animated video';
+      const basePrompt = prompts[sourceNode.id] || sourceNode.prompt || 'Animated video';
+      const seedanceReferences = isSeedanceModel
+        ? [
+          sourceNode,
+          ...orderedReferenceNodes.filter(node => node.id !== sourceNode.id)
+        ].slice(0, 9)
+        : [sourceNode];
+      const PROMPT = isSeedanceModel
+        ? `以图1作为当前分镜主参考生成视频。其余参考图用于保持角色、场景、美术风格和镜头连续性，不要把其他分镜内容混入当前镜头。${basePrompt}`
+        : basePrompt;
 
       const newVideoNode: NodeData = {
         id: newNodeId,
@@ -671,10 +684,13 @@ export default function App() {
         videoDuration: settings.duration,
         aspectRatio: sourceNode.aspectRatio || '16:9',
         resolution: settings.resolution,
-        parentIds: [sourceNode.id], // Connect to source image
+        parentIds: seedanceReferences.map(node => node.id),
         // groupId: undefined, // Explicitly NOT in the group
-        videoMode: 'frame-to-frame', // Important for image-to-video
+        videoMode: isSeedanceModel ? 'standard' : 'frame-to-frame',
         inputUrl: sourceNode.resultUrl, // Pass image as input
+        seedanceReferenceOrder: isSeedanceModel
+          ? seedanceReferences.map(node => ({ type: 'node' as const, id: node.id }))
+          : undefined,
       };
 
       newNodes.push(newVideoNode);

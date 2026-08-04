@@ -29,11 +29,12 @@ interface StoryboardVideoModalProps {
     };
 }
 
-// Video durations in seconds
-const VIDEO_DURATIONS = [5, 6, 8, 10];
 const VIDEO_RESOLUTIONS = ["Auto", "1080p", "768p", "720p", "512p"];
 
 const VIDEO_MODELS = [
+    { id: 'seedance-2.0', name: 'Seedance 2.0', provider: 'volcengine', recommended: true, durations: [5, 6, 8, 10, 12, 15], resolutions: ['Auto', '720p', '1080p'] },
+    { id: 'seedance-2.0-fast', name: 'Seedance 2.0 Fast', provider: 'volcengine', durations: [5, 6, 8, 10, 12, 15], resolutions: ['Auto', '720p', '1080p'] },
+    { id: 'seedance-2.0-mini', name: 'Seedance 2.0 Mini', provider: 'volcengine', durations: [5, 6, 8, 10, 12, 15], resolutions: ['Auto', '720p', '1080p'] },
     {
         id: 'veo-3.1',
         name: 'Veo 3.1',
@@ -79,9 +80,9 @@ export const StoryboardVideoModal: React.FC<StoryboardVideoModalProps> = ({
 
     const [prompts, setPrompts] = useState<Record<string, string>>({});
     const [settings, setSettings] = useState({
-        model: 'veo-3.1',
-        duration: 4, // Default to 4s for Veo
-        resolution: '720p' // Safe default
+        model: 'seedance-2.0',
+        duration: 5,
+        resolution: '720p'
     });
     const [generatingPrompts, setGeneratingPrompts] = useState<Record<string, boolean>>({});
     const [optimizingPrompts, setOptimizingPrompts] = useState<Record<string, boolean>>({});
@@ -199,8 +200,8 @@ export const StoryboardVideoModal: React.FC<StoryboardVideoModalProps> = ({
 
             if (!response.ok) throw new Error('Failed to generate prompt');
 
-            const data = await response.json();
-            setPrompts(prev => ({ ...prev, [nodeId]: data.description }));
+            const data = await response.json() as { description?: string };
+            setPrompts(prev => ({ ...prev, [nodeId]: data.description || '' }));
         } catch (error) {
             console.error('Prompt generation failed:', error);
             // Fallback or error notification could go here
@@ -227,8 +228,8 @@ export const StoryboardVideoModal: React.FC<StoryboardVideoModalProps> = ({
 
             if (!response.ok) throw new Error('Failed to optimize prompt');
 
-            const data = await response.json();
-            setPrompts(prev => ({ ...prev, [nodeId]: data.optimizedPrompt }));
+            const data = await response.json() as { optimizedPrompt?: string };
+            setPrompts(prev => ({ ...prev, [nodeId]: data.optimizedPrompt || currentPrompt }));
         } catch (error) {
             console.error('Prompt optimization failed:', error);
             // Fallback or error notification could go here
@@ -399,7 +400,8 @@ export const StoryboardVideoModal: React.FC<StoryboardVideoModalProps> = ({
                                         className="flex items-center gap-2 bg-neutral-800 text-white text-xs px-3 py-2 rounded-lg border border-neutral-700 hover:bg-neutral-700 transition-colors min-w-[160px] justify-between"
                                     >
                                         <div className="flex items-center gap-2">
-                                            {currentModel.id === 'veo-3.1' ? <GoogleIcon size={14} className="text-white" /> :
+                                            {currentModel.provider === 'volcengine' ? <Film size={14} className="text-purple-300" /> :
+                                                currentModel.id === 'veo-3.1' ? <GoogleIcon size={14} className="text-white" /> :
                                                 currentModel.provider === 'kling' ? <KlingIcon size={16} /> :
                                                     currentModel.provider === 'hailuo' ? <HailuoIcon size={16} /> :
                                                         <Film size={14} />}
@@ -412,8 +414,27 @@ export const StoryboardVideoModal: React.FC<StoryboardVideoModalProps> = ({
                                     {showModelDropdown && (
                                         <div className="absolute bottom-full mb-2 left-0 w-64 bg-[#1f1f1f] border border-neutral-700 rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col max-h-[400px] overflow-y-auto">
 
+                                            {/* Volcengine */}
+                                            <div className="px-3 py-2 text-[10px] font-bold text-neutral-500 uppercase tracking-wider bg-[#1a1a1a]">Volcengine</div>
+                                            {VIDEO_MODELS.filter(m => m.provider === 'volcengine').map(model => (
+                                                <button
+                                                    key={model.id}
+                                                    onClick={() => handleModelChange(model.id)}
+                                                    className={`w-full flex items-center justify-between px-3 py-2.5 text-xs hover:bg-[#2a2a2a] transition-colors ${settings.model === model.id ? 'text-purple-300 bg-purple-500/10' : 'text-neutral-300'}`}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <Film size={14} className={settings.model === model.id ? 'text-purple-300' : 'text-neutral-400'} />
+                                                        {model.name}
+                                                        {model.recommended && (
+                                                            <span className="text-[9px] px-1 py-0.5 bg-green-500/20 text-green-400 rounded font-medium">REC</span>
+                                                        )}
+                                                    </div>
+                                                    {settings.model === model.id && <Check size={14} />}
+                                                </button>
+                                            ))}
+
                                             {/* Google */}
-                                            <div className="px-3 py-2 text-[10px] font-bold text-neutral-500 uppercase tracking-wider bg-[#1a1a1a]">Google</div>
+                                            <div className="px-3 py-2 text-[10px] font-bold text-neutral-500 uppercase tracking-wider bg-[#1a1a1a] border-t border-neutral-700">Google</div>
                                             {VIDEO_MODELS.filter(m => m.provider === 'google').map(model => (
                                                 <button
                                                     key={model.id}
@@ -489,7 +510,7 @@ export const StoryboardVideoModal: React.FC<StoryboardVideoModalProps> = ({
                                     onChange={(e) => setSettings(prev => ({ ...prev, resolution: e.target.value }))}
                                     className="bg-neutral-800 text-white text-xs px-3 py-2 rounded-lg border border-neutral-700 focus:outline-none focus:border-purple-500 min-w-[80px]"
                                 >
-                                    {availableResolutions.map(res => (
+                                    {(availableResolutions as string[]).map((res: string) => (
                                         <option key={res} value={res}>{res}</option>
                                     ))}
                                 </select>

@@ -35,6 +35,7 @@ https://ark.cn-beijing.volces.com/api/v3
 - Seedance 时长支持 `Auto`、`5`、`6`、`8`、`10`、`12`、`15` 秒。
 - 本地生成视频可上传到 TOS，后续作为视频参考时使用公网 URL。
 - Storyboard Generator 已改为 Seed Evolving 生成文本，Seedream 5.0 Pro 生成合成图。
+- Storyboard 视频生成支持 Seedance 2.0，并会将当前分镜图作为图 1，其余分镜图作为多参考图保持角色和风格一致。
 - 本地素材、聊天和工作流数据保存在 `library/` 目录。
 
 ## 项目结构
