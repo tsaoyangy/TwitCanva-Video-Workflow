@@ -112,23 +112,42 @@ export const useGeneration = ({ nodes, updateNode }: UseGenerationProps) => {
 
         try {
             if (node.type === NodeType.IMAGE || node.type === NodeType.IMAGE_EDITOR) {
-                // Collect ALL parent images for multi-input generation
+                // Collect parent images for image-to-image generation.
+                // Seedream 5.0 Pro supports up to 10 reference images.
                 const imageBase64s: string[] = [];
+                const maxReferenceImages = node.imageModel?.startsWith('seedream-') ? 10 : 14;
+                const imageParentIds = node.parentIds?.filter(pid => {
+                    const parent = nodes.find(n => n.id === pid);
+                    return parent?.type !== NodeType.TEXT;
+                }) || [];
+                const orderedImageParentIds = (() => {
+                    if (!node.imageModel?.startsWith('seedream-')) return imageParentIds;
+
+                    const availableIds = new Set(imageParentIds);
+                    const orderedIds = (node.seedreamReferenceOrder || [])
+                        .map(item => item.id)
+                        .filter(id => availableIds.has(id));
+                    const missingIds = imageParentIds.filter(id => !orderedIds.includes(id));
+                    return [...orderedIds, ...missingIds];
+                })();
 
                 // Get images from all direct parents (excluding TEXT nodes)
-                if (node.parentIds && node.parentIds.length > 0) {
-                    for (const parentId of node.parentIds) {
+                if (orderedImageParentIds.length > 0) {
+                    for (const parentId of orderedImageParentIds) {
                         let currentId: string | undefined = parentId;
 
                         // Traverse up the chain to find an image source (skip TEXT nodes)
-                        while (currentId && imageBase64s.length < 14) { // Gemini 3 Pro limit
+                        while (currentId && imageBase64s.length < maxReferenceImages) {
                             const parent = nodes.find(n => n.id === currentId);
                             // Skip TEXT nodes - they provide prompts, not images
                             if (parent?.type === NodeType.TEXT) {
                                 break;
                             }
-                            if (parent?.resultUrl) {
-                                imageBase64s.push(parent.resultUrl);
+                            const parentImageUrl = parent?.type === NodeType.VIDEO && parent.lastFrame
+                                ? parent.lastFrame
+                                : parent?.resultUrl;
+                            if (parentImageUrl) {
+                                imageBase64s.push(parentImageUrl);
                                 break; // Found image for this parent chain
                             } else {
                                 // Continue up this chain
@@ -141,7 +160,7 @@ export const useGeneration = ({ nodes, updateNode }: UseGenerationProps) => {
                 // Add character reference URLs from storyboard nodes (for maintaining character consistency)
                 if (node.characterReferenceUrls && node.characterReferenceUrls.length > 0) {
                     for (const charUrl of node.characterReferenceUrls) {
-                        if (imageBase64s.length < 14) { // Respect Gemini's limit
+                        if (imageBase64s.length < maxReferenceImages) {
                             imageBase64s.push(charUrl);
                         }
                     }
@@ -228,17 +247,19 @@ export const useGeneration = ({ nodes, updateNode }: UseGenerationProps) => {
 
             } else if (node.type === NodeType.VIDEO) {
                 // Get first parent image for video generation (start frame)
-                let imageBase64: string | undefined;
+                let imageBase64: string | string[] | undefined;
                 let lastFrameBase64: string | undefined;
+                let seedanceReferenceInputs: string[] | undefined;
+                const isSeedanceModel = node.videoModel?.startsWith('seedance-');
 
-                // Get non-TEXT parent nodes (image sources only)
-                const imageParentIds = node.parentIds?.filter(pid => {
+                // Get non-TEXT parent nodes (visual sources)
+                const visualParentIds = node.parentIds?.filter(pid => {
                     const parent = nodes.find(n => n.id === pid);
                     return parent?.type !== NodeType.TEXT;
                 }) || [];
 
                 // Check for frame-to-frame mode (explicit or auto-detected from 2+ image parents)
-                const hasMultipleInputs = imageParentIds.length >= 2;
+                const hasMultipleInputs = visualParentIds.length >= 2;
                 const hasExplicitFrameInputs = node.frameInputs && node.frameInputs.length >= 2;
 
                 // Motion Reference logic (Kling 2.6)
@@ -259,10 +280,47 @@ export const useGeneration = ({ nodes, updateNode }: UseGenerationProps) => {
                 // Only evaluate as frame-to-frame if NOT in motion control mode
                 const isFrameToFrame = !isMotionControl && (node.videoMode === 'frame-to-frame' || hasMultipleInputs || hasExplicitFrameInputs);
 
-                if (isFrameToFrame && imageParentIds.length >= 2) {
+                if (isSeedanceModel) {
+                    const connectedReferences = visualParentIds
+                        .map(parentId => nodes.find(n => n.id === parentId))
+                        .filter(parent => (parent?.type === NodeType.IMAGE || parent?.type === NodeType.VIDEO) && parent.resultUrl)
+                        .map(parent => ({
+                            type: 'node' as const,
+                            id: parent!.id,
+                            url: parent!.type === NodeType.VIDEO && parent!.tosPublicUrl
+                                ? parent!.tosPublicUrl
+                                : parent!.resultUrl!
+                        }));
+
+                    const assetId = node.seedanceReferenceAssetId?.trim();
+                    const availableReferences = [
+                        ...connectedReferences,
+                        ...(assetId ? [{
+                            type: 'asset' as const,
+                            id: assetId,
+                            url: assetId.startsWith('asset://') ? assetId : `asset://${assetId}`
+                        }] : [])
+                    ];
+                    const availableKeys = new Set(availableReferences.map(ref => `${ref.type}:${ref.id}`));
+                    const orderedKeys = (node.seedanceReferenceOrder || [])
+                        .map(item => `${item.type}:${item.id}`)
+                        .filter(key => availableKeys.has(key));
+                    const missingKeys = availableReferences
+                        .map(ref => `${ref.type}:${ref.id}`)
+                        .filter(key => !orderedKeys.includes(key));
+                    const finalKeys = [...orderedKeys, ...missingKeys];
+
+                    seedanceReferenceInputs = finalKeys
+                        .map(key => availableReferences.find(ref => `${ref.type}:${ref.id}` === key)?.url)
+                        .filter((url): url is string => Boolean(url))
+                        .slice(0, 9);
+
+                    imageBase64 = undefined;
+                    lastFrameBase64 = undefined;
+                } else if (isFrameToFrame && visualParentIds.length >= 2) {
                     // Get start and end frames from frameInputs (if user reordered) or default order
-                    const parent1 = nodes.find(n => n.id === imageParentIds[0]);
-                    const parent2 = nodes.find(n => n.id === imageParentIds[1]);
+                    const parent1 = nodes.find(n => n.id === visualParentIds[0]);
+                    const parent2 = nodes.find(n => n.id === visualParentIds[1]);
 
                     // Check if user has explicitly set frame order
                     if (node.frameInputs && node.frameInputs.length >= 2) {
@@ -287,7 +345,7 @@ export const useGeneration = ({ nodes, updateNode }: UseGenerationProps) => {
                         if (parent1?.resultUrl) imageBase64 = parent1.resultUrl;
                         if (parent2?.resultUrl) lastFrameBase64 = parent2.resultUrl;
                     }
-                } else if (imageParentIds.length > 0) {
+                } else if (visualParentIds.length > 0) {
                     // Standard mode or Motion Control: get character reference or first parent image
                     if (isMotionControl) {
                         // For Motion Control, look specifically for an IMAGE parent as character reference
@@ -300,8 +358,8 @@ export const useGeneration = ({ nodes, updateNode }: UseGenerationProps) => {
                         }
                     } else {
                         // Standard mode: get first parent image or video last frame
-                        // Use imageParentIds (filtered to exclude TEXT nodes) instead of raw parentIds
-                        const parent = nodes.find(n => n.id === imageParentIds[0]);
+                        // Use visualParentIds (filtered to exclude TEXT nodes) instead of raw parentIds
+                        const parent = nodes.find(n => n.id === visualParentIds[0]);
 
                         if (parent?.type === NodeType.VIDEO && parent.lastFrame) {
                             // Use last frame from parent video
@@ -314,7 +372,7 @@ export const useGeneration = ({ nodes, updateNode }: UseGenerationProps) => {
                 }
 
                 // Generate video
-                const rawResultUrl = await generateVideo({
+                const videoResult = await generateVideo({
                     prompt: combinedPrompt,
                     imageBase64,
                     lastFrameBase64,
@@ -323,13 +381,15 @@ export const useGeneration = ({ nodes, updateNode }: UseGenerationProps) => {
                     duration: node.videoDuration,
                     videoModel: node.videoModel,
                     motionReferenceUrl,
+                    seedanceReferenceAssetId: node.seedanceReferenceAssetId,
+                    seedanceReferenceInputs,
                     generateAudio: node.generateAudio, // For Kling 2.6 and Veo 3.1 native audio
                     nodeId: id
                 });
 
                 // Add cache-busting parameter to force browser to fetch new video
                 // (Backend uses nodeId as filename, so URL is the same for regenerated videos)
-                const resultUrl = `${rawResultUrl}?t=${Date.now()}`;
+                const resultUrl = `${videoResult.resultUrl}?t=${Date.now()}`;
 
                 // Extract last frame for chaining
                 const lastFrame = await extractVideoLastFrame(resultUrl);
@@ -355,6 +415,7 @@ export const useGeneration = ({ nodes, updateNode }: UseGenerationProps) => {
                 updateNode(id, {
                     status: NodeStatus.SUCCESS,
                     resultUrl,
+                    tosPublicUrl: videoResult.tosPublicUrl,
                     resultAspectRatio,
                     aspectRatio,
                     lastFrame,

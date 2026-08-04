@@ -1,0 +1,13 @@
+{
+  "id": "000e3264-0c28-4b0c-b3bb-888988afd3e3",
+  "filename": "vid_1784642353903_sqmjg0fqq.mp4",
+  "prompt": "把视频一中的人物替换为图片一中的人物，其他保持不变",
+  "model": "seedance-2.0",
+  "aspectRatio": "9:16",
+  "resolution": "720p",
+  "createdAt": "2026-07-21T13:59:22.322Z",
+  "type": "videos",
+  "tosBucket": "arkclaw--tsaoyang",
+  "tosKey": "twitcanva/video/vid_1784642353903_sqmjg0fqq.mp4",
+  "tosPublicUrl": "https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com/twitcanva/video/vid_1784642353903_sqmjg0fqq.mp4"
+}

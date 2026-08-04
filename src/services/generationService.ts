@@ -22,13 +22,15 @@ export interface GenerateImageParams {
 
 export interface GenerateVideoParams {
   prompt: string;
-  imageBase64?: string; // For Image-to-Video (start frame)
+  imageBase64?: string | string[]; // For Image-to-Video or Seedance reference images
   lastFrameBase64?: string; // For frame-to-frame interpolation (end frame)
   aspectRatio?: string;
   resolution?: string; // Add resolution to params
   duration?: number; // Video duration in seconds (e.g., 5, 6, 8, 10)
   videoModel?: string; // Video model version (e.g., 'veo-3.1', 'kling-v2-1')
   motionReferenceUrl?: string; // For Kling 2.6 motion control
+  seedanceReferenceAssetId?: string; // For Seedance asset library reference
+  seedanceReferenceInputs?: string[]; // Ordered Seedance reference images/assets
   generateAudio?: boolean; // For Kling 2.6 and Veo 3.1 native audio (default: true)
   nodeId?: string; // ID of the node initiating generation
 }
@@ -64,7 +66,12 @@ export const generateImage = async (params: GenerateImageParams): Promise<string
 /**
  * Generates a video by calling the backend API
  */
-export const generateVideo = async (params: GenerateVideoParams): Promise<string> => {
+export interface GenerateVideoResult {
+  resultUrl: string;
+  tosPublicUrl?: string;
+}
+
+export const generateVideo = async (params: GenerateVideoParams): Promise<GenerateVideoResult> => {
   try {
     const response = await fetch('/api/generate-video', {
       method: 'POST',
@@ -81,7 +88,10 @@ export const generateVideo = async (params: GenerateVideoParams): Promise<string
     if (!data.resultUrl) {
       throw new Error("No video data returned from server");
     }
-    return data.resultUrl;
+    return {
+      resultUrl: data.resultUrl,
+      tosPublicUrl: data.tosPublicUrl
+    };
 
   } catch (error) {
     console.error("Video Generation Error:", error);

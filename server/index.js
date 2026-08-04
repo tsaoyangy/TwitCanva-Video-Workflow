@@ -17,6 +17,7 @@ import tiktokPostRoutes from './routes/tiktok-post.js';
 import { processTikTokVideo, isValidTikTokUrl } from './tools/tiktok.js';
 import localModelsRoutes from './routes/local-models.js';
 import storyboardRoutes from './routes/storyboard.js';
+import { createSeedChatCompletion } from './services/ark.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -51,6 +52,7 @@ app.use('/library', (req, res, next) => {
 
 
 const API_KEY = process.env.GEMINI_API_KEY;
+const ARK_API_KEY = process.env.ARK_API_KEY;
 
 if (!API_KEY) {
     console.warn("SERVER WARNING: GEMINI_API_KEY is not set in environment or .env file.");
@@ -104,6 +106,7 @@ if (!FAL_API_KEY) {
 
 // Set up app.locals for sharing config with route modules
 app.locals.GEMINI_API_KEY = API_KEY;
+app.locals.ARK_API_KEY = ARK_API_KEY;
 app.locals.KLING_ACCESS_KEY = KLING_ACCESS_KEY;
 app.locals.KLING_SECRET_KEY = KLING_SECRET_KEY;
 app.locals.HAILUO_API_KEY = HAILUO_API_KEY;
@@ -239,6 +242,122 @@ app.use('/api/storyboard', storyboardRoutes);
 
 // --- Library Assets API ---
 
+const getLibraryJsonPath = () => path.join(LIBRARY_ASSETS_DIR, 'assets.json');
+
+const readLibraryData = () => {
+    const libraryJsonPath = getLibraryJsonPath();
+    if (!fs.existsSync(libraryJsonPath)) {
+        return [];
+    }
+    return JSON.parse(fs.readFileSync(libraryJsonPath, 'utf8'));
+};
+
+const writeLibraryData = (libraryData) => {
+    fs.writeFileSync(getLibraryJsonPath(), JSON.stringify(libraryData, null, 2));
+};
+
+const sanitizeAssetName = (name) => name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+const parseAssetSource = (sourceUrl) => {
+    if (!sourceUrl) {
+        throw new Error('Missing sourceUrl');
+    }
+
+    if (sourceUrl.startsWith('data:')) {
+        const matches = sourceUrl.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+        if (!matches || matches.length !== 3) {
+            const error = new Error('Invalid data URL format');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        const mimeType = matches[1];
+        const base64Data = matches[2];
+        const buffer = Buffer.from(base64Data, 'base64');
+
+        let ext = '.png';
+        if (mimeType === 'image/jpeg') ext = '.jpg';
+        else if (mimeType === 'video/mp4') ext = '.mp4';
+
+        return {
+            type: mimeType.startsWith('video/') ? 'video' : 'image',
+            ext,
+            buffer
+        };
+    }
+
+    let cleanUrl = sourceUrl;
+    try {
+        if (sourceUrl.startsWith('http')) {
+            const parsedUrl = new URL(sourceUrl);
+            cleanUrl = parsedUrl.pathname;
+        }
+    } catch (e) {
+        // Fall back to path-like handling below.
+    }
+
+    cleanUrl = decodeURIComponent(cleanUrl.split('?')[0]);
+    if (!cleanUrl.startsWith('/')) cleanUrl = `/${cleanUrl}`;
+
+    let sourcePath = null;
+    if (cleanUrl.startsWith('/library/images/')) {
+        sourcePath = path.join(IMAGES_DIR, cleanUrl.replace('/library/images/', ''));
+    } else if (cleanUrl.startsWith('/library/videos/')) {
+        sourcePath = path.join(VIDEOS_DIR, cleanUrl.replace('/library/videos/', ''));
+    } else if (cleanUrl.startsWith('/library/assets/')) {
+        sourcePath = path.join(LIBRARY_ASSETS_DIR, cleanUrl.replace('/library/assets/', ''));
+    } else if (cleanUrl.startsWith('/assets/images/')) {
+        sourcePath = path.join(IMAGES_DIR, cleanUrl.replace('/assets/images/', ''));
+    } else if (cleanUrl.startsWith('/assets/videos/')) {
+        sourcePath = path.join(VIDEOS_DIR, cleanUrl.replace('/assets/videos/', ''));
+    }
+
+    if (!sourcePath || !fs.existsSync(sourcePath)) {
+        const error = new Error('Source file not found');
+        error.statusCode = 404;
+        error.debug = { sourceUrl, sourcePath, cleanUrl };
+        throw error;
+    }
+
+    const ext = path.extname(sourcePath) || '.png';
+    return {
+        type: ext === '.mp4' ? 'video' : 'image',
+        ext,
+        sourcePath
+    };
+};
+
+const persistAssetMedia = ({ sourceUrl, name, category, existingUrl = null }) => {
+    const destDir = path.join(LIBRARY_ASSETS_DIR, category);
+    if (!fs.existsSync(destDir)) {
+        fs.mkdirSync(destDir, { recursive: true });
+    }
+
+    const safeName = sanitizeAssetName(name);
+    const source = parseAssetSource(sourceUrl);
+    const destFilename = `${safeName}${source.ext}`;
+    const destPath = path.join(destDir, destFilename);
+
+    if (source.buffer) {
+        fs.writeFileSync(destPath, source.buffer);
+    } else if (source.sourcePath) {
+        fs.copyFileSync(source.sourcePath, destPath);
+    }
+
+    if (existingUrl && existingUrl.startsWith('/library/assets/')) {
+        const previousRelativePath = existingUrl.replace('/library/assets/', '');
+        const previousPath = path.join(LIBRARY_ASSETS_DIR, previousRelativePath);
+        if (previousPath !== destPath && fs.existsSync(previousPath)) {
+            fs.unlinkSync(previousPath);
+        }
+    }
+
+    return {
+        type: source.type,
+        url: `/library/assets/${category}/${destFilename}`
+    };
+};
+
 // Save curated asset to library
 app.post('/api/library', async (req, res) => {
     try {
@@ -248,124 +367,74 @@ app.post('/api/library', async (req, res) => {
             return res.status(400).json({ error: "Missing required fields" });
         }
 
-        // Determine destination directory
-        const destDir = path.join(LIBRARY_ASSETS_DIR, category);
-        if (!fs.existsSync(destDir)) {
-            fs.mkdirSync(destDir, { recursive: true });
-        }
-
-        // Sanitize name for filesystem
-        const safeName = name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-
-        let destFilename;
-        let destPath;
-
-        // HANDLE DATA URL (Base64)
-        if (sourceUrl.startsWith('data:')) {
-            const matches = sourceUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-            if (!matches || matches.length !== 3) {
-                return res.status(400).json({ error: 'Invalid data URL format' });
-            }
-
-            const mimeType = matches[1];
-            const base64Data = matches[2];
-            const buffer = Buffer.from(base64Data, 'base64');
-
-            // Determine extension from mime
-            let ext = '.png';
-            if (mimeType === 'image/jpeg') ext = '.jpg';
-            else if (mimeType === 'video/mp4') ext = '.mp4';
-            // Add more as needed
-
-            destFilename = `${safeName}${ext}`;
-            destPath = path.join(destDir, destFilename);
-
-            fs.writeFileSync(destPath, buffer);
-        }
-        // HANDLE FILE PATH OR URL
-        else {
-            // Determine source file path
-            let sourcePath = null;
-
-            // Normalize URL: remove origin if present to get just the path
-            let cleanUrl = sourceUrl;
-            try {
-                // If it's a full URL, extract pathname
-                if (sourceUrl.startsWith('http')) {
-                    const u = new URL(sourceUrl);
-                    cleanUrl = u.pathname;
-                }
-            } catch (e) {
-                // Not a valid URL, treat as path
-            }
-
-            // Always strip query string (cache busting params like ?t=123)
-            cleanUrl = cleanUrl.split('?')[0];
-
-            // Ensure cleanUrl starts with / if it doesn't (though URL.pathname does)
-            if (!cleanUrl.startsWith('/')) cleanUrl = '/' + cleanUrl;
-
-            // Handle URL decoding (e.g. %20 -> space)
-            cleanUrl = decodeURIComponent(cleanUrl);
-
-            if (cleanUrl.startsWith('/library/images/')) {
-                sourcePath = path.join(IMAGES_DIR, cleanUrl.replace('/library/images/', ''));
-            } else if (cleanUrl.startsWith('/library/videos/')) {
-                sourcePath = path.join(VIDEOS_DIR, cleanUrl.replace('/library/videos/', ''));
-            } else if (cleanUrl.startsWith('/assets/images/')) { // Legacy support
-                sourcePath = path.join(IMAGES_DIR, cleanUrl.replace('/assets/images/', ''));
-            } else if (cleanUrl.startsWith('/assets/videos/')) { // Legacy support
-                sourcePath = path.join(VIDEOS_DIR, cleanUrl.replace('/assets/videos/', ''));
-            }
-
-            if (!sourcePath || !fs.existsSync(sourcePath)) {
-                console.error(`Save asset failed: Source file not found. URL: ${sourceUrl}, Path: ${sourcePath}`);
-                return res.status(404).json({ error: "Source file not found", debug: { sourceUrl, sourcePath, cleanUrl } });
-            }
-
-            // Copy file
-            const ext = path.extname(sourcePath);
-            destFilename = `${safeName}${ext}`;
-            destPath = path.join(destDir, destFilename);
-
-            fs.copyFileSync(sourcePath, destPath);
-        }
-
-        // Update assets.json
-        const libraryJsonPath = path.join(LIBRARY_ASSETS_DIR, 'assets.json');
-        let libraryData = [];
-        if (fs.existsSync(libraryJsonPath)) {
-            libraryData = JSON.parse(fs.readFileSync(libraryJsonPath, 'utf8'));
-        }
+        const persistedAsset = persistAssetMedia({ sourceUrl, name, category });
+        const libraryData = readLibraryData();
 
         const newEntry = {
             id: crypto.randomUUID(),
             name: name,
             category: category,
-            url: `/library/assets/${category}/${destFilename}`,
-            type: sourceUrl.includes('video') || (sourceUrl.startsWith('data:video')) ? 'video' : 'image',
+            url: persistedAsset.url,
+            type: persistedAsset.type,
             createdAt: new Date().toISOString(),
             ...meta
         };
 
         libraryData.push(newEntry);
-        fs.writeFileSync(libraryJsonPath, JSON.stringify(libraryData, null, 2));
+        writeLibraryData(libraryData);
 
         res.json({ success: true, asset: newEntry });
     } catch (error) {
         console.error("Save to library error:", error);
-        res.status(500).json({ error: error.message });
+        res.status(error.statusCode || 500).json({ error: error.message, debug: error.debug });
+    }
+});
+
+app.put('/api/library/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { sourceUrl } = req.body;
+
+        if (!sourceUrl) {
+            return res.status(400).json({ error: "Missing sourceUrl" });
+        }
+
+        const libraryData = readLibraryData();
+        const assetIndex = libraryData.findIndex(asset => asset.id === id);
+
+        if (assetIndex === -1) {
+            return res.status(404).json({ error: "Asset not found" });
+        }
+
+        const existingAsset = libraryData[assetIndex];
+        const persistedAsset = persistAssetMedia({
+            sourceUrl,
+            name: existingAsset.name,
+            category: existingAsset.category,
+            existingUrl: existingAsset.url
+        });
+
+        const updatedAsset = {
+            ...existingAsset,
+            url: persistedAsset.url,
+            type: persistedAsset.type,
+            updatedAt: new Date().toISOString()
+        };
+
+        libraryData[assetIndex] = updatedAsset;
+        writeLibraryData(libraryData);
+
+        res.json({ success: true, asset: updatedAsset });
+    } catch (error) {
+        console.error("Update library asset error:", error);
+        res.status(error.statusCode || 500).json({ error: error.message, debug: error.debug });
     }
 });
 
 // List library assets
 app.get('/api/library', async (req, res) => {
     try {
-        const libraryJsonPath = path.join(LIBRARY_ASSETS_DIR, 'assets.json');
-        if (!fs.existsSync(libraryJsonPath)) {
-            return res.json([]);
-        }
-        const libraryData = JSON.parse(fs.readFileSync(libraryJsonPath, 'utf8'));
+        const libraryData = readLibraryData();
         // Sort newest first
         libraryData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         res.json(libraryData);
@@ -379,13 +448,11 @@ app.get('/api/library', async (req, res) => {
 app.delete('/api/library/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const libraryJsonPath = path.join(LIBRARY_ASSETS_DIR, 'assets.json');
+        const libraryData = readLibraryData();
 
-        if (!fs.existsSync(libraryJsonPath)) {
+        if (libraryData.length === 0) {
             return res.status(404).json({ error: "Library not found" });
         }
-
-        let libraryData = JSON.parse(fs.readFileSync(libraryJsonPath, 'utf8'));
         const assetIndex = libraryData.findIndex(a => a.id === id);
 
         if (assetIndex === -1) {
@@ -406,7 +473,7 @@ app.delete('/api/library/:id', async (req, res) => {
 
         // Remove from array
         libraryData.splice(assetIndex, 1);
-        fs.writeFileSync(libraryJsonPath, JSON.stringify(libraryData, null, 2));
+        writeLibraryData(libraryData);
 
         res.json({ success: true });
     } catch (error) {
@@ -699,35 +766,30 @@ app.post('/api/gemini/describe-image', async (req, res) => {
             return res.status(400).json({ error: 'Could not process image URL. Provide base64 data or a valid library path.', debug: { imageUrl } });
         }
 
-        const client = getClient();
-        // Correct SDK usage for @google/genai ^1.32.0
-        const result = await client.models.generateContent({
-            model: "gemini-2.0-flash",
-            contents: {
-                parts: [
-                    { text: prompt || "Describe this image in detail for video generation." },
-                    imagePart
+        if (!ARK_API_KEY) {
+            return res.status(500).json({ error: "ARK_API_KEY not configured. Add ARK_API_KEY to .env" });
+        }
+
+        const { text } = await createSeedChatCompletion({
+            apiKey: ARK_API_KEY,
+            messages: [{
+                role: 'user',
+                content: [
+                    { type: 'text', text: prompt || "Describe this image in detail for video generation." },
+                    {
+                        type: 'image_url',
+                        image_url: {
+                            url: `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`
+                        }
+                    }
                 ]
-            }
+            }],
+            temperature: 0.4,
+            maxTokens: 512
         });
 
-        let text = "";
-
-        // Handle @google/genai SDK response structure
-        if (result.candidates && result.candidates.length > 0) {
-            const candidate = result.candidates[0];
-            if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
-                text = candidate.content.parts[0].text || "";
-            }
-        }
-        // Fallback for other potential response shapes
-        else if (result.response && typeof result.response.text === 'function') {
-            text = result.response.text();
-        }
-
         if (!text) {
-            console.warn('[Gemini DescribeV2] Warning: No text content found in response.');
-            console.debug('[Gemini DescribeV2] Response dump:', JSON.stringify(result, null, 2));
+            console.warn('[Seed Describe] Warning: No text content found in response.');
         }
 
         res.json({ description: text });
@@ -748,39 +810,28 @@ app.post('/api/gemini/optimize-prompt', async (req, res) => {
             return res.status(400).json({ error: 'Prompt is required' });
         }
 
-        const client = getClient();
         const systemInstruction = "You are an expert video prompt engineer. Your goal is to rewrite the user's prompt to be descriptive, visual, and optimized for AI video generation models like Veo, Kling, and Hailuo. detailed, cinematic, and focused on motion and atmosphere. Keep it under 60 words. Output ONLY the rewritten prompt.";
+        if (!ARK_API_KEY) {
+            return res.status(500).json({ error: "ARK_API_KEY not configured. Add ARK_API_KEY to .env" });
+        }
 
-        const result = await client.models.generateContent({
-            model: "gemini-2.0-flash",
-            contents: {
-                parts: [
-                    { text: `${systemInstruction}\n\nUser Prompt: ${prompt}` }
-                ]
-            }
+        const { text: optimizedText } = await createSeedChatCompletion({
+            apiKey: ARK_API_KEY,
+            messages: [
+                { role: 'system', content: systemInstruction },
+                { role: 'user', content: prompt }
+            ],
+            temperature: 0.4,
+            maxTokens: 256
         });
 
-        let text = "";
-
-        // Handle @google/genai SDK response structure
-        if (result.candidates && result.candidates.length > 0) {
-            const candidate = result.candidates[0];
-            if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
-                text = candidate.content.parts[0].text || "";
-            }
-        }
-        // Fallback for other potential response shapes
-        else if (result.response && typeof result.response.text === 'function') {
-            text = result.response.text();
-        }
-
-        if (!text) {
+        if (!optimizedText) {
             console.warn('[Gemini Optimize] Warning: No text content found in response.');
             return res.status(500).json({ error: 'Failed to optimize prompt' });
         }
 
         // Clean up text (remove quotes if present)
-        text = text.trim().replace(/^["']|["']$/g, '');
+        const text = optimizedText.trim().replace(/^["']|["']$/g, '');
 
         res.json({ optimizedPrompt: text });
 
@@ -1150,8 +1201,8 @@ app.post('/api/chat', async (req, res) => {
     try {
         const { sessionId, message, media } = req.body;
 
-        if (!API_KEY) {
-            return res.status(500).json({ error: "Server missing API Key config" });
+        if (!ARK_API_KEY) {
+            return res.status(500).json({ error: "ARK_API_KEY not configured. Add ARK_API_KEY to .env" });
         }
 
         if (!sessionId) {
@@ -1162,7 +1213,7 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: "message or media is required" });
         }
 
-        const result = await chatAgent.sendMessage(sessionId, message, media, API_KEY);
+        const result = await chatAgent.sendMessage(sessionId, message, media, ARK_API_KEY);
 
         res.json({
             success: true,

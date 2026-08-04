@@ -96,16 +96,18 @@ export const useKeyboardShortcuts = ({
         const handleKeyDown = (e: KeyboardEvent) => {
             const activeTag = document.activeElement?.tagName.toLowerCase();
             if (activeTag === 'input' || activeTag === 'textarea') return;
+            const isModifierPressed = e.ctrlKey || e.metaKey;
+            const key = e.key.toLowerCase();
 
-            // Undo: Ctrl+Z (without Shift)
-            if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+            // Undo: Ctrl/Cmd+Z (without Shift)
+            if (isModifierPressed && key === 'z' && !e.shiftKey) {
                 e.preventDefault();
                 undo();
                 return;
             }
 
-            // Redo: Ctrl+Y or Ctrl+Shift+Z
-            if ((e.ctrlKey && e.key === 'y') || (e.ctrlKey && e.shiftKey && e.key === 'z')) {
+            // Redo: Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z
+            if ((isModifierPressed && key === 'y') || (isModifierPressed && e.shiftKey && key === 'z')) {
                 e.preventDefault();
                 redo();
                 return;

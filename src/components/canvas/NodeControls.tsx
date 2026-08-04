@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useRef, useEffect, memo } from 'react';
-import { Sparkles, Banana, Settings2, Check, ChevronDown, ChevronUp, GripVertical, Image as ImageIcon, Film, Clock, Expand, Shrink, Monitor, Crop, HardDrive } from 'lucide-react';
+import { Sparkles, Settings2, Check, ChevronDown, ChevronUp, Image as ImageIcon, Film, Clock, Expand, Shrink, Monitor, Crop, HardDrive } from 'lucide-react';
 import { NodeData, NodeStatus, NodeType } from '../../types';
 import { OpenAIIcon, GoogleIcon, KlingIcon, HailuoIcon } from '../icons/BrandIcons';
 import { useFaceDetection } from '../../hooks/useFaceDetection';
@@ -19,10 +19,11 @@ interface NodeControlsProps {
     inputUrl?: string;
     isLoading: boolean;
     isSuccess: boolean;
-    connectedImageNodes?: { id: string; url: string; type?: NodeType }[]; // Connected parent nodes
+    connectedImageNodes?: { id: string; url: string; resultUrl?: string; tosPublicUrl?: string; type?: NodeType }[]; // Connected parent nodes
     onUpdate: (id: string, updates: Partial<NodeData>) => void;
     onGenerate: (id: string) => void;
     onChangeAngleGenerate?: (nodeId: string) => void;
+    onOpenSeedreamEditor?: (nodeId: string) => void;
     onSelect: (id: string) => void;
     zoom: number;
     canvasTheme?: 'dark' | 'light';
@@ -37,7 +38,7 @@ const VIDEO_RESOLUTIONS = [
 ];
 
 // Video durations in seconds
-const VIDEO_DURATIONS = [5, 6, 8, 10];
+const VIDEO_DURATIONS = [5, 6, 8, 10, 12, 15];
 
 // Video model versions with metadata
 // supportsTextToVideo: Can generate video from text prompt only
@@ -50,6 +51,9 @@ const VIDEO_ASPECT_RATIOS = ["16:9", "9:16"];
 
 const VIDEO_MODELS = [
     { id: 'veo-3.1', name: 'Veo 3.1', provider: 'google', supportsTextToVideo: true, supportsImageToVideo: true, supportsMultiImage: true, durations: [4, 6, 8], resolutions: ['Auto', '720p', '1080p'], aspectRatios: ['16:9', '9:16'] },
+    { id: 'seedance-2.0', name: 'Seedance 2.0', provider: 'volcengine', supportsTextToVideo: true, supportsImageToVideo: true, supportsMultiImage: true, recommended: true, durations: ['Auto', 5, 6, 8, 10, 12, 15], resolutions: ['Auto', '720p', '1080p'], aspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9'] },
+    { id: 'seedance-2.0-fast', name: 'Seedance 2.0 Fast', provider: 'volcengine', supportsTextToVideo: true, supportsImageToVideo: true, supportsMultiImage: true, durations: ['Auto', 5, 6, 8, 10, 12, 15], resolutions: ['Auto', '720p', '1080p'], aspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9'] },
+    { id: 'seedance-2.0-mini', name: 'Seedance 2.0 Mini', provider: 'volcengine', supportsTextToVideo: true, supportsImageToVideo: true, supportsMultiImage: true, durations: ['Auto', 5, 6, 8, 10, 12, 15], resolutions: ['Auto', '720p', '1080p'], aspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9'] },
     // Kling AI models - Consolidated: removed legacy v1, v1-5, v1-6, v2-master
     { id: 'kling-v2-1', name: 'Kling V2.1', provider: 'kling', supportsTextToVideo: true, supportsImageToVideo: true, supportsMultiImage: true, recommended: true, durations: [5, 10], resolutions: ['Auto', '720p', '1080p'], aspectRatios: ['16:9', '9:16'] },
     { id: 'kling-v2-1-master', name: 'Kling V2.1 Master', provider: 'kling', supportsTextToVideo: true, supportsImageToVideo: true, supportsMultiImage: true, durations: [5, 10], resolutions: ['Auto', '720p', '1080p'], aspectRatios: ['16:9', '9:16'] },
@@ -81,9 +85,9 @@ const IMAGE_MODELS = [
         aspectRatios: ["Auto", "1024x1024", "1536x1024", "1024x1536"]
     },
     {
-        id: 'gemini-pro',
-        name: 'Nano Banana Pro',
-        provider: 'google',
+        id: 'seedream-5.0-pro',
+        name: 'Seedream 5.0 Pro',
+        provider: 'volcengine',
         supportsImageToImage: true,
         supportsMultiImage: true,
         resolutions: ["1K", "2K", "4K"],
@@ -171,6 +175,7 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
     onUpdate,
     onGenerate,
     onChangeAngleGenerate,
+    onOpenSeedreamEditor,
     onSelect,
     zoom,
     canvasTheme = 'dark'
@@ -181,7 +186,6 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
     const [showDurationDropdown, setShowDurationDropdown] = useState(false);
     const [showResolutionDropdown, setShowResolutionDropdown] = useState(false);
     const [showModelDropdown, setShowModelDropdown] = useState(false);
-    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
     const [localPrompt, setLocalPrompt] = useState(data.prompt || '');
     const dropdownRef = useRef<HTMLDivElement>(null);
     const aspectRatioDropdownRef = useRef<HTMLDivElement>(null);
@@ -190,6 +194,8 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
     const modelDropdownRef = useRef<HTMLDivElement>(null);
     const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastSentPromptRef = useRef<string | undefined>(data.prompt); // Track what we sent
+    const tosUrlResolveInFlightRef = useRef<Set<string>>(new Set());
+    const [tosUrlResolveStatus, setTosUrlResolveStatus] = useState<Record<string, 'resolving' | 'error'>>({});
 
     // Local model state for LOCAL_IMAGE_MODEL and LOCAL_VIDEO_MODEL nodes
     const [localModels, setLocalModels] = useState<LocalModel[]>([]);
@@ -325,39 +331,6 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
         setShowAspectRatioDropdown(false);
     };
 
-    const handleVideoModeChange = (mode: 'standard' | 'frame-to-frame') => {
-        if (mode === 'frame-to-frame') {
-            // Initialize frameInputs from connected nodes
-            const initialFrameInputs = connectedImageNodes.slice(0, 2).map((node, idx) => ({
-                nodeId: node.id,
-                order: idx === 0 ? 'start' : 'end' as 'start' | 'end'
-            }));
-            onUpdate(data.id, { videoMode: mode, frameInputs: initialFrameInputs });
-        } else {
-            onUpdate(data.id, { videoMode: mode, frameInputs: undefined });
-        }
-    };
-
-    const handleFrameReorder = (fromIndex: number, toIndex: number) => {
-        if (fromIndex === toIndex || connectedImageNodes.length < 2) return;
-
-        // Get the two connected nodes
-        const node1 = connectedImageNodes[0];
-        const node2 = connectedImageNodes[1];
-
-        // Get current orders (from saved data or default)
-        const current1Order = data.frameInputs?.find(f => f.nodeId === node1.id)?.order || 'start';
-        const current2Order = data.frameInputs?.find(f => f.nodeId === node2.id)?.order || 'end';
-
-        // Swap the orders
-        const updatedFrameInputs = [
-            { nodeId: node1.id, order: current1Order === 'start' ? 'end' : 'start' as 'start' | 'end' },
-            { nodeId: node2.id, order: current2Order === 'start' ? 'end' : 'start' as 'start' | 'end' }
-        ];
-
-        onUpdate(data.id, { frameInputs: updatedFrameInputs });
-    };
-
     const currentSizeLabel = (data.type === NodeType.VIDEO || data.type === NodeType.LOCAL_VIDEO_MODEL)
         ? (data.resolution || "Auto")
         : (data.aspectRatio || "Auto");
@@ -381,13 +354,15 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
     const hasVideoParent = connectedImageNodes.some(n => n.type === NodeType.VIDEO);
     const imageInputCount = connectedImageNodes.filter(n => n.type === NodeType.IMAGE).length;
 
-    const videoGenerationMode = hasVideoParent ? 'motion-control'
+    const hasSeedanceModelSelected = data.videoModel?.startsWith('seedance-');
+    const videoGenerationMode = hasVideoParent && !hasSeedanceModelSelected ? 'motion-control'
         : (isFrameToFrame || imageInputCount >= 2) ? 'frame-to-frame'
             : (inputUrl || imageInputCount > 0) ? 'image-to-video'
                 : 'text-to-video';
 
     // Filter video models based on mode
     const availableVideoModels = VIDEO_MODELS.filter(model => {
+        if (hasVideoParent && model.provider === 'volcengine') return true;
         if (videoGenerationMode === 'motion-control') return model.id === 'kling-v2-6'; // Only Kling 2.6 for now
         if (videoGenerationMode === 'text-to-video') return model.supportsTextToVideo;
         if (videoGenerationMode === 'image-to-video') return model.supportsImageToVideo;
@@ -410,7 +385,8 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
 
         // Reset duration if current duration is not supported by new model
         if (newModel?.durations && data.videoDuration && !newModel.durations.includes(data.videoDuration)) {
-            updates.videoDuration = newModel.durations[0];
+            const firstFixedDuration = newModel.durations.find((duration): duration is number => typeof duration === 'number');
+            updates.videoDuration = firstFixedDuration;
         }
 
         // Reset resolution if current resolution is not supported by new model
@@ -429,7 +405,7 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
 
     // Get available durations for current model
     const availableDurations = currentVideoModel.durations || [5];
-    const currentDuration = data.videoDuration || availableDurations[0];
+    const currentDuration = data.videoDuration ?? availableDurations[0];
 
     // Get available resolutions for current model (considering duration for models with durationResolutionMap)
     const getAvailableResolutions = () => {
@@ -446,12 +422,14 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
         ? availableResolutions
         : imageAspectRatioOptions;
 
-    const handleDurationChange = (duration: number) => {
+    const handleDurationChange = (duration: number | 'Auto') => {
         const model = currentVideoModel as any;
-        const updates: Partial<typeof data> = { videoDuration: duration };
+        const updates: Partial<typeof data> = {
+            videoDuration: duration === 'Auto' ? undefined : duration
+        };
 
         // If model has duration-specific resolutions, reset resolution if needed
-        if (model.durationResolutionMap) {
+        if (duration !== 'Auto' && model.durationResolutionMap) {
             const allowedResolutions = model.durationResolutionMap[duration] || model.resolutions;
             if (data.resolution && !allowedResolutions.includes(data.resolution.toLowerCase())) {
                 updates.resolution = allowedResolutions[0];
@@ -527,24 +505,164 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
         setShowResolutionDropdown(false);
     };
 
-    // Get frame inputs with their image URLs
-    // Auto-assign order: first connected = start, second = end
-    // If user has explicitly set frameInputs, use those orders, otherwise auto-assign
-    const frameInputsWithUrls = connectedImageNodes.slice(0, 2).map((node, idx) => {
-        // Check if there's an explicit order from user reordering
-        const existingInput = data.frameInputs?.find(f => f.nodeId === node.id);
-        return {
-            nodeId: node.id,
-            url: node.url,
-            type: node.type,
-            order: existingInput?.order || (idx === 0 ? 'start' : 'end') as 'start' | 'end'
+    const seedanceConnectedReferences = connectedImageNodes
+        .filter(node => (node.type === NodeType.IMAGE || node.type === NodeType.VIDEO) && (node.url || node.resultUrl))
+        .map(node => ({
+            type: 'node' as const,
+            id: node.id,
+            label: node.id,
+            nodeType: node.type,
+            url: node.type === NodeType.VIDEO ? (node.resultUrl || node.url) : node.url,
+            thumbnailUrl: node.url,
+            tosPublicUrl: node.tosPublicUrl
+        }));
+    const seedanceAssetId = data.seedanceReferenceAssetId?.trim();
+    const seedanceAvailableReferences = [
+        ...seedanceConnectedReferences,
+        ...(seedanceAssetId ? [{
+            type: 'asset' as const,
+            id: seedanceAssetId,
+            label: seedanceAssetId,
+            url: undefined
+        }] : [])
+    ];
+    const seedanceAvailableKeys = new Set(seedanceAvailableReferences.map(ref => `${ref.type}:${ref.id}`));
+    const seedanceOrderedKeys = (data.seedanceReferenceOrder || [])
+        .map(item => `${item.type}:${item.id}`)
+        .filter(key => seedanceAvailableKeys.has(key));
+    const seedanceMissingKeys = seedanceAvailableReferences
+        .map(ref => `${ref.type}:${ref.id}`)
+        .filter(key => !seedanceOrderedKeys.includes(key));
+    const seedanceReferenceList = [...seedanceOrderedKeys, ...seedanceMissingKeys]
+        .map(key => seedanceAvailableReferences.find(ref => `${ref.type}:${ref.id}` === key))
+        .filter((ref): ref is typeof seedanceAvailableReferences[number] => Boolean(ref))
+        .slice(0, 9);
+
+    const connectedVideoReferenceKey = connectedImageNodes
+        .filter(node => node.type === NodeType.VIDEO)
+        .map(node => `${node.id}:${node.resultUrl || node.url}:${node.tosPublicUrl || ''}`)
+        .join('|');
+
+    useEffect(() => {
+        const videosMissingTosUrl = connectedImageNodes.filter(node => {
+            if (node.type !== NodeType.VIDEO || node.tosPublicUrl) return false;
+            const sourceUrl = node.resultUrl || node.url;
+            return Boolean(sourceUrl && sourceUrl.includes('/library/videos/'));
+        });
+
+        if (videosMissingTosUrl.length === 0) return;
+
+        let isCancelled = false;
+
+        videosMissingTosUrl.forEach(node => {
+            const sourceUrl = node.resultUrl || node.url;
+            const attemptKey = `${node.id}:${sourceUrl}`;
+            if (!sourceUrl || tosUrlResolveInFlightRef.current.has(attemptKey)) return;
+
+            tosUrlResolveInFlightRef.current.add(attemptKey);
+            setTosUrlResolveStatus(prev => ({ ...prev, [node.id]: 'resolving' }));
+
+            fetch(`/api/videos/tos-url?url=${encodeURIComponent(sourceUrl)}`)
+                .then(async response => {
+                    const body = await response.json().catch(() => ({})) as { error?: string; tosPublicUrl?: string };
+                    if (!response.ok) {
+                        throw new Error(body.error || 'Failed to resolve TOS URL');
+                    }
+                    return body;
+                })
+                .then(body => {
+                    if (isCancelled) return;
+                    if (!body.tosPublicUrl) {
+                        throw new Error('TOS URL missing from response');
+                    }
+
+                    tosUrlResolveInFlightRef.current.delete(attemptKey);
+                    onUpdate(node.id, { tosPublicUrl: body.tosPublicUrl });
+                    setTosUrlResolveStatus(prev => {
+                        const next = { ...prev };
+                        delete next[node.id];
+                        return next;
+                    });
+                })
+                .catch(error => {
+                    tosUrlResolveInFlightRef.current.delete(attemptKey);
+                    if (isCancelled) return;
+                    console.error('Failed to resolve video TOS URL:', error);
+                    setTosUrlResolveStatus(prev => ({ ...prev, [node.id]: 'error' }));
+                })
+                .finally(() => {
+                    tosUrlResolveInFlightRef.current.delete(attemptKey);
+                });
+        });
+
+        return () => {
+            isCancelled = true;
+            videosMissingTosUrl.forEach(node => {
+                const sourceUrl = node.resultUrl || node.url;
+                if (sourceUrl) {
+                    tosUrlResolveInFlightRef.current.delete(`${node.id}:${sourceUrl}`);
+                }
+            });
         };
-    }).sort((a, b) => {
-        // Sort by order: 'start' first, 'end' second
-        if (a.order === 'start' && b.order === 'end') return -1;
-        if (a.order === 'end' && b.order === 'start') return 1;
-        return 0;
-    });
+    }, [connectedVideoReferenceKey]);
+
+    const updateSeedanceReferenceOrder = (items: typeof seedanceReferenceList) => {
+        onUpdate(data.id, {
+            seedanceReferenceOrder: items.map(item => ({
+                type: item.type,
+                id: item.id
+            }))
+        });
+    };
+
+    const moveSeedanceReference = (index: number, direction: -1 | 1) => {
+        const nextIndex = index + direction;
+        if (nextIndex < 0 || nextIndex >= seedanceReferenceList.length) return;
+        const reordered = [...seedanceReferenceList];
+        const [item] = reordered.splice(index, 1);
+        reordered.splice(nextIndex, 0, item);
+        updateSeedanceReferenceOrder(reordered);
+    };
+
+    const isSeedreamImageModel = currentImageModel.id.startsWith('seedream-');
+    const seedreamAvailableReferences = connectedImageNodes
+        .filter(node => node.url)
+        .map(node => ({
+            type: 'node' as const,
+            id: node.id,
+            label: node.id,
+            url: node.url,
+            nodeType: node.type
+        }));
+    const seedreamAvailableKeys = new Set(seedreamAvailableReferences.map(ref => `${ref.type}:${ref.id}`));
+    const seedreamOrderedKeys = (data.seedreamReferenceOrder || [])
+        .map(item => `${item.type}:${item.id}`)
+        .filter(key => seedreamAvailableKeys.has(key));
+    const seedreamMissingKeys = seedreamAvailableReferences
+        .map(ref => `${ref.type}:${ref.id}`)
+        .filter(key => !seedreamOrderedKeys.includes(key));
+    const seedreamReferenceList = [...seedreamOrderedKeys, ...seedreamMissingKeys]
+        .map(key => seedreamAvailableReferences.find(ref => `${ref.type}:${ref.id}` === key))
+        .filter((ref): ref is typeof seedreamAvailableReferences[number] => Boolean(ref))
+        .slice(0, 10);
+
+    const updateSeedreamReferenceOrder = (items: typeof seedreamReferenceList) => {
+        onUpdate(data.id, {
+            seedreamReferenceOrder: items.map(item => ({
+                type: item.type,
+                id: item.id
+            }))
+        });
+    };
+
+    const moveSeedreamReference = (index: number, direction: -1 | 1) => {
+        const nextIndex = index + direction;
+        if (nextIndex < 0 || nextIndex >= seedreamReferenceList.length) return;
+        const reordered = [...seedreamReferenceList];
+        const [item] = reordered.splice(index, 1);
+        reordered.splice(nextIndex, 0, item);
+        updateSeedreamReferenceOrder(reordered);
+    };
 
     // Inverse scaling for the prompt bar to keep it readable when zooming out
     // When zooming in (zoom > 0.8), we let it zoom 1:1 with the canvas (localScale = 1)
@@ -771,6 +889,32 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
                                             </>
                                         )}
 
+                                        {/* Volcengine Models */}
+                                        {availableVideoModels.filter(m => m.provider === 'volcengine').length > 0 && (
+                                            <>
+                                                <div className="px-3 py-1.5 text-[10px] font-bold text-neutral-500 uppercase tracking-wider bg-[#1f1f1f] border-t border-neutral-700">
+                                                    Volcengine
+                                                </div>
+                                                {availableVideoModels.filter(m => m.provider === 'volcengine').map(model => (
+                                                    <button
+                                                        key={model.id}
+                                                        onClick={() => handleVideoModelChange(model.id)}
+                                                        className={`w-full flex items-center justify-between px-3 py-2 text-xs text-left hover:bg-[#333] transition-colors ${currentVideoModel.id === model.id ? 'text-blue-400' : 'text-neutral-300'
+                                                            }`}
+                                                    >
+                                                        <span className="flex items-center gap-2">
+                                                            <Film size={12} className="text-cyan-400" />
+                                                            {model.name}
+                                                            {model.recommended && (
+                                                                <span className="text-[9px] px-1 py-0.5 bg-green-600/30 text-green-400 rounded">REC</span>
+                                                            )}
+                                                        </span>
+                                                        {currentVideoModel.id === model.id && <Check size={12} />}
+                                                    </button>
+                                                ))}
+                                            </>
+                                        )}
+
                                         {/* Kling Models */}
                                         {availableVideoModels.filter(m => m.provider === 'kling').length > 0 && (
                                             <>
@@ -830,8 +974,8 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
                                 >
                                     {currentImageModel.id === 'google-veo' ? ( // Keeping consistency if there was one, but mainly checking provider
                                         <GoogleIcon size={12} className="text-white" />
-                                    ) : currentImageModel.id === 'gemini-pro' ? (
-                                        <Banana size={12} className="text-yellow-400" />
+                                    ) : currentImageModel.provider === 'volcengine' ? (
+                                        <ImageIcon size={12} className="text-cyan-400" />
                                     ) : currentImageModel.provider === 'openai' ? (
                                         <OpenAIIcon size={12} className="text-green-400" />
                                     ) : currentImageModel.provider === 'kling' ? (
@@ -880,13 +1024,13 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
                                                 ))}
                                             </>
                                         )}
-                                        {/* Google Models */}
-                                        {availableImageModels.filter(m => m.provider === 'google').length > 0 && (
+                                        {/* Volcengine Models */}
+                                        {availableImageModels.filter(m => m.provider === 'volcengine').length > 0 && (
                                             <>
                                                 <div className="px-3 py-1.5 text-[10px] font-bold text-neutral-500 uppercase tracking-wider bg-[#1f1f1f] border-t border-neutral-700">
-                                                    Google
+                                                    Volcengine
                                                 </div>
-                                                {availableImageModels.filter(m => m.provider === 'google').map(model => (
+                                                {availableImageModels.filter(m => m.provider === 'volcengine').map(model => (
                                                     <button
                                                         key={model.id}
                                                         onClick={() => handleImageModelChange(model.id)}
@@ -894,11 +1038,7 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
                                                             }`}
                                                     >
                                                         <span className="flex items-center gap-2">
-                                                            {model.id === 'gemini-pro' ? (
-                                                                <Banana size={12} className="text-yellow-400" />
-                                                            ) : (
-                                                                <GoogleIcon size={12} className="text-white" />
-                                                            )}
+                                                            <ImageIcon size={12} className="text-cyan-400" />
                                                             {model.name}
                                                         </span>
                                                         {currentImageModel.id === model.id && <Check size={12} />}
@@ -1051,7 +1191,7 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
                                     className="flex items-center gap-1.5 text-xs font-medium bg-[#252525] hover:bg-[#333] border border-neutral-700 text-white px-2.5 py-1.5 rounded-lg transition-colors"
                                 >
                                     <Clock size={12} className="text-cyan-400" />
-                                    {currentDuration}s
+                                    {currentDuration === 'Auto' ? 'Auto' : `${currentDuration}s`}
                                 </button>
 
                                 {/* Duration Dropdown Menu */}
@@ -1060,13 +1200,13 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
                                         <div className="px-3 py-2 text-[10px] font-bold text-neutral-500 uppercase tracking-wider bg-[#1f1f1f]">
                                             Duration
                                         </div>
-                                        {availableDurations.map((dur: number) => (
+                                        {availableDurations.map((dur: number | 'Auto') => (
                                             <button
                                                 key={dur}
                                                 onClick={() => handleDurationChange(dur)}
                                                 className={`w-full flex items-center justify-between px-3 py-2 text-xs text-left hover:bg-[#333] transition-colors ${currentDuration === dur ? 'text-blue-400' : 'text-neutral-300'}`}
                                             >
-                                                <span>{dur}s</span>
+                                                <span>{dur === 'Auto' ? 'Auto' : `${dur}s`}</span>
                                                 {currentDuration === dur && <Check size={12} />}
                                             </button>
                                         ))}
@@ -1076,12 +1216,13 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
                         )}
 
                         {/* Generate Button - Active even after success to allow re-generation */}
-                        {!isLoading && (() => {
+                        {(() => {
                             // Check if generation is blocked due to no face detected in Face mode
                             const isFaceModeBlocked = !isVideoNode &&
                                 data.imageModel === 'kling-v1-5' &&
                                 data.klingReferenceMode === 'face' &&
                                 (data.faceDetectionStatus === 'error' || data.faceDetectionStatus === 'loading');
+                            const isGenerateDisabled = isFaceModeBlocked || isLoading;
 
                             return (
                                 <button
@@ -1091,16 +1232,17 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
                                             // Show a warning - this is handled by the warning component
                                             return;
                                         }
+                                        if (isLoading) return;
                                         onGenerate(data.id);
                                     }}
-                                    disabled={isFaceModeBlocked}
-                                    className={`group w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isFaceModeBlocked
+                                    disabled={isGenerateDisabled}
+                                    className={`group w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isGenerateDisabled
                                         ? 'bg-neutral-700/50 cursor-not-allowed opacity-50'
                                         : isDark
                                             ? 'bg-white text-neutral-900 hover:bg-neutral-100 active:scale-95'
                                             : 'bg-neutral-900 text-white hover:bg-neutral-800 active:scale-95'
                                         }`}
-                                    title={isFaceModeBlocked ? 'Cannot generate: No face detected in reference image' : 'Generate'}
+                                    title={isFaceModeBlocked ? 'Cannot generate: No face detected in reference image' : isLoading ? 'Generating...' : 'Generate'}
                                 >
                                     <svg
                                         viewBox="0 0 24 24"
@@ -1112,7 +1254,89 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
                                 </button>
                             );
                         })()}
+
+                        {!isVideoNode && isSeedreamImageModel && onOpenSeedreamEditor && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (isLoading) return;
+                                    onOpenSeedreamEditor(data.id);
+                                }}
+                                disabled={isLoading}
+                                className={`group h-9 px-3 rounded-full flex items-center gap-1.5 text-xs font-semibold transition-all duration-200 ${isLoading
+                                    ? 'bg-neutral-700/50 cursor-not-allowed opacity-50'
+                                    : 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/25 active:scale-95'
+                                    }`}
+                                title="Open Seedream Interactive Editor"
+                            >
+                                <Sparkles size={13} />
+                                Edit
+                            </button>
+                        )}
                     </div>
+                </div>
+            )}
+
+            {/* Seedream Reference Order - For image-to-image and multi-image generation */}
+            {!isVideoNode && isSeedreamImageModel && seedreamReferenceList.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-neutral-800 space-y-2">
+                    <label className="text-[10px] text-neutral-500 uppercase tracking-wider">
+                        Reference Images Order
+                    </label>
+
+                    <div className="space-y-2">
+                        {seedreamReferenceList.map((item, index) => (
+                            <div
+                                key={`${item.type}:${item.id}`}
+                                className="flex items-center gap-2 p-2 bg-neutral-800 rounded-lg border border-neutral-700/50"
+                            >
+                                <div className="w-14 h-12 rounded bg-black/60 overflow-hidden flex items-center justify-center border border-neutral-700">
+                                    <img
+                                        src={item.url}
+                                        alt={`Reference ${index + 1}`}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-600/25 text-cyan-300">
+                                            Image {index + 1}
+                                        </span>
+                                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-700 text-neutral-400">
+                                            {item.nodeType === NodeType.VIDEO ? 'Video Frame' : 'Canvas Image'}
+                                        </span>
+                                    </div>
+                                    <div className="text-[10px] text-neutral-500 truncate mt-1">
+                                        {item.label}
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => moveSeedreamReference(index, -1)}
+                                        disabled={index === 0}
+                                        className="w-6 h-5 rounded bg-neutral-700 text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-neutral-600"
+                                        title="Move up"
+                                    >
+                                        ↑
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => moveSeedreamReference(index, 1)}
+                                        disabled={index === seedreamReferenceList.length - 1}
+                                        className="w-6 h-5 rounded bg-neutral-700 text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-neutral-600"
+                                        title="Move down"
+                                    >
+                                        ↓
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <p className="text-[10px] text-neutral-600">
+                        This order maps directly to 图片1, 图片2, etc. in the Seedream request.
+                    </p>
                 </div>
             )}
 
@@ -1313,92 +1537,106 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
                                     </div>
                                 )}
 
-                                {/* Frame Inputs - Show when 2+ nodes are connected */}
-                                {connectedImageNodes.length >= 2 && (
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] text-neutral-500 uppercase tracking-wider">
-                                            {videoGenerationMode === 'motion-control' ? 'Input References' : 'Connected Frames'}
-                                            {videoGenerationMode !== 'motion-control' && <span className="text-neutral-600"> (drag to reorder)</span>}
-                                        </label>
+                                {data.videoModel?.startsWith('seedance-') && (
+                                    <div className="space-y-3">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] text-neutral-500 uppercase tracking-wider">
+                                                Ark Asset ID
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={data.seedanceReferenceAssetId || ''}
+                                                onChange={(e) => onUpdate(data.id, { seedanceReferenceAssetId: e.target.value })}
+                                                placeholder="Paste asset id, asset:// prefix optional"
+                                                className="w-full px-2.5 py-1.5 bg-neutral-800 border border-neutral-700 rounded-lg text-xs text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-cyan-600"
+                                            />
+                                        </div>
 
-                                        {frameInputsWithUrls.length === 0 ? (
-                                            <div className="text-xs text-neutral-600 italic py-2">
-                                                {videoGenerationMode === 'motion-control' ? 'Connect video and image nodes as references' : 'Connect image nodes to use as start/end frames'}
-                                            </div>
-                                        ) : videoGenerationMode === 'motion-control' ? (
-                                            /* Horizontal layout for Motion Control */
-                                            <div className="flex gap-2">
-                                                {frameInputsWithUrls.map((input, index) => (
-                                                    <div
-                                                        key={input.nodeId}
-                                                        className="flex-1 flex flex-col items-center gap-2 p-2 bg-neutral-800 rounded-lg border border-neutral-700/50"
-                                                    >
-                                                        <div className="relative w-full aspect-video overflow-hidden rounded bg-black flex items-center justify-center">
-                                                            {input.url ? (
-                                                                <img
-                                                                    src={input.url}
-                                                                    alt={input.type === NodeType.VIDEO ? 'Motion Ref' : 'Character Ref'}
-                                                                    className="w-full h-full object-contain"
-                                                                />
-                                                            ) : (
-                                                                <div className="text-[10px] text-neutral-600">No Preview</div>
-                                                            )}
-                                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                                            <div className="absolute bottom-1 left-1 right-1">
-                                                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded block text-center truncate ${input.type === NodeType.VIDEO
-                                                                    ? 'bg-purple-600/80 text-white'
-                                                                    : 'bg-blue-600/80 text-white'
-                                                                    }`}>
-                                                                    {input.type === NodeType.VIDEO ? 'MOTION REF' : 'CHARACTER REF'}
-                                                                </span>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] text-neutral-500 uppercase tracking-wider">
+                                                Reference Media Order
+                                            </label>
+
+                                            {seedanceReferenceList.length === 0 ? (
+                                                <div className="text-xs text-neutral-600 italic py-2">
+                                                    Connect image/video nodes or enter an Ark Asset ID.
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    {seedanceReferenceList.map((item, index) => (
+                                                        <div
+                                                            key={`${item.type}:${item.id}`}
+                                                            className="flex items-center gap-2 p-2 bg-neutral-800 rounded-lg border border-neutral-700/50"
+                                                        >
+                                                            <div className="w-14 h-12 rounded bg-black/60 overflow-hidden flex items-center justify-center border border-neutral-700">
+                                                                {item.type === 'node' && item.nodeType === NodeType.VIDEO && item.url ? (
+                                                                    <video
+                                                                        src={item.url}
+                                                                        className="w-full h-full object-cover"
+                                                                        muted
+                                                                        playsInline
+                                                                        preload="metadata"
+                                                                    />
+                                                                ) : item.type === 'node' && item.thumbnailUrl ? (
+                                                                    <img
+                                                                        src={item.thumbnailUrl}
+                                                                        alt={`Reference ${index + 1}`}
+                                                                        className="w-full h-full object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <span className="text-[9px] text-cyan-400 font-semibold">ASSET</span>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-600/25 text-cyan-300">
+                                                                        {item.type === 'node' && item.nodeType === NodeType.VIDEO ? 'Video' : 'Image'} {index + 1}
+                                                                    </span>
+                                                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-700 text-neutral-400">
+                                                                        {item.type === 'asset' ? 'Asset ID' : item.nodeType === NodeType.VIDEO ? 'Canvas Video' : 'Canvas Image'}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="text-[10px] text-neutral-500 truncate mt-1">
+                                                                    {item.label}
+                                                                </div>
+                                                                {item.type === 'node' && item.nodeType === NodeType.VIDEO && (
+                                                                    <div
+                                                                        className={`text-[10px] truncate mt-1 ${item.tosPublicUrl ? 'text-cyan-500' : tosUrlResolveStatus[item.id] === 'error' ? 'text-red-400' : 'text-neutral-500'}`}
+                                                                        title={item.tosPublicUrl || ''}
+                                                                    >
+                                                                        TOS: {item.tosPublicUrl || (tosUrlResolveStatus[item.id] === 'resolving' ? 'Resolving...' : tosUrlResolveStatus[item.id] === 'error' ? 'Not available' : 'Pending')}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex flex-col gap-1">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => moveSeedanceReference(index, -1)}
+                                                                    disabled={index === 0}
+                                                                    className="w-6 h-5 rounded bg-neutral-700 text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-neutral-600"
+                                                                    title="Move up"
+                                                                >
+                                                                    ↑
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => moveSeedanceReference(index, 1)}
+                                                                    disabled={index === seedanceReferenceList.length - 1}
+                                                                    className="w-6 h-5 rounded bg-neutral-700 text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-neutral-600"
+                                                                    title="Move down"
+                                                                >
+                                                                    ↓
+                                                                </button>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            /* Vertical draggable layout for Frame-to-Frame */
-                                            <div className="space-y-2">
-                                                {frameInputsWithUrls.map((input, index) => (
-                                                    <div
-                                                        key={input.nodeId}
-                                                        draggable
-                                                        onDragStart={() => setDraggedIndex(index)}
-                                                        onDragOver={(e) => e.preventDefault()}
-                                                        onDrop={() => {
-                                                            if (draggedIndex !== null) {
-                                                                handleFrameReorder(draggedIndex, index);
-                                                                setDraggedIndex(null);
-                                                            }
-                                                        }}
-                                                        onDragEnd={() => setDraggedIndex(null)}
-                                                        className={`flex items-center gap-2 p-2 bg-neutral-800 rounded-lg cursor-grab active:cursor-grabbing transition-all ${draggedIndex === index ? 'opacity-50 scale-95' : ''
-                                                            }`}
-                                                    >
-                                                        <GripVertical size={14} className="text-neutral-600" />
-                                                        <img
-                                                            src={input.url}
-                                                            alt={`Frame ${index + 1}`}
-                                                            className="w-12 h-12 object-cover rounded"
-                                                        />
-                                                        <div className="flex-1">
-                                                            <span className={`text-xs font-medium px-2 py-0.5 rounded ${input.order === 'start'
-                                                                ? 'bg-green-600/30 text-green-400'
-                                                                : 'bg-orange-600/30 text-orange-400'
-                                                                }`}>
-                                                                {input.order === 'start' ? 'START' : 'END'}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
+                                                    ))}
+                                                </div>
+                                            )}
 
-                                        {connectedImageNodes.length > frameInputsWithUrls.length && (
-                                            <div className="text-xs text-neutral-500 mt-1">
-                                                {connectedImageNodes.length - frameInputsWithUrls.length} more input(s) available
-                                            </div>
-                                        )}
+                                            <p className="text-[10px] text-neutral-600">
+                                                This order maps directly to 图片1, 图片2, etc. in the Seedance request.
+                                            </p>
+                                        </div>
                                     </div>
                                 )}
                             </div>

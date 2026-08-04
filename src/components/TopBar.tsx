@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from 'react';
-import { Plus, Save, Loader2 } from 'lucide-react';
+import { Plus, Save, Loader2, Pencil } from 'lucide-react';
 
 interface TopBarProps {
     // Title
@@ -73,6 +73,12 @@ export const TopBar: React.FC<TopBarProps> = ({
         setIsEditingTitle(true);
     };
 
+    const handleTitleClick = () => {
+        if (!isEditingTitle) {
+            handleTitleDoubleClick();
+        }
+    };
+
     const handleNewClick = () => {
         if (hasUnsavedChanges) {
             setShowNewConfirm(true);
@@ -119,13 +125,16 @@ export const TopBar: React.FC<TopBarProps> = ({
                             className="font-semibold text-neutral-300 bg-transparent border-b border-blue-500 outline-none min-w-[100px]"
                         />
                     ) : (
-                        <span
-                            className={`font-semibold cursor-pointer transition-colors ${canvasTheme === 'dark' ? 'text-neutral-300 hover:text-white' : 'text-neutral-900 hover:text-neutral-600'}`}
+                        <button
+                            type="button"
+                            className={`flex items-center gap-2 font-semibold cursor-pointer transition-colors ${canvasTheme === 'dark' ? 'text-neutral-300 hover:text-white' : 'text-neutral-900 hover:text-neutral-600'}`}
+                            onClick={handleTitleClick}
                             onDoubleClick={handleTitleDoubleClick}
-                            title="Double-click to rename"
+                            title="Click to rename"
                         >
-                            {canvasTitle}
-                        </span>
+                            <span>{canvasTitle}</span>
+                            <Pencil size={14} className="opacity-60" />
+                        </button>
                     )}
                 </div>
 

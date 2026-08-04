@@ -1,0 +1,60 @@
+[
+  {
+    "id": "f431addd-28d2-4881-a21c-a36fe551d99c",
+    "name": "cosmetics",
+    "category": "Item",
+    "url": "/library/assets/Item/cosmetics.png",
+    "type": "image",
+    "createdAt": "2026-07-20T13:58:54.435Z",
+    "updatedAt": "2026-07-21T08:53:50.446Z"
+  },
+  {
+    "id": "76fdf94f-8858-42c0-b11b-9f181701255a",
+    "name": "cosmetics",
+    "category": "Item",
+    "url": "/library/assets/Item/cosmetics.png",
+    "type": "image",
+    "createdAt": "2026-07-20T13:59:13.376Z"
+  },
+  {
+    "id": "8623a1da-2563-4ea3-b296-73063d476c99",
+    "name": "cosmetics",
+    "category": "Character",
+    "url": "/library/assets/Character/cosmetics.png",
+    "type": "image",
+    "createdAt": "2026-07-20T13:59:38.021Z"
+  },
+  {
+    "id": "c23de6c6-e4ca-4a80-9558-46df15c6902a",
+    "name": "My Assets",
+    "category": "Character",
+    "url": "/library/assets/Character/my_assets.png",
+    "type": "image",
+    "createdAt": "2026-07-21T14:52:49.071Z"
+  },
+  {
+    "id": "32a81fef-b10d-4a77-81fd-2e853c4f7bd0",
+    "name": "shortdrama",
+    "category": "Character",
+    "url": "/library/assets/Character/shortdrama.png",
+    "type": "image",
+    "createdAt": "2026-08-04T10:16:40.882Z",
+    "updatedAt": "2026-08-04T10:16:55.628Z"
+  },
+  {
+    "id": "b737ed6a-78a5-4b27-abf8-3d37e6bfc280",
+    "name": "shortdrama02",
+    "category": "Character",
+    "url": "/library/assets/Character/shortdrama02.png",
+    "type": "image",
+    "createdAt": "2026-08-04T10:17:38.794Z"
+  },
+  {
+    "id": "60aff10d-bf1b-407e-9c2c-b3332474221d",
+    "name": "background",
+    "category": "Character",
+    "url": "/library/assets/Character/background.jpg",
+    "type": "image",
+    "createdAt": "2026-08-04T10:17:54.696Z"
+  }
+]

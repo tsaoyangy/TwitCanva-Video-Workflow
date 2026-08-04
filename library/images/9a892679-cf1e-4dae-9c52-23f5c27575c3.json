@@ -1,0 +1,8 @@
+{
+  "id": "9a892679-cf1e-4dae-9c52-23f5c27575c3",
+  "filename": "img_1785840450830_99hk1r5o3.png",
+  "prompt": "Extract panel #1 from this storyboard reference image. Keep all characters, environment, colors, art style, and composition exactly the same. Recreate only this single panel as a standalone 16:9 image.",
+  "model": "seedream-5.0-pro",
+  "createdAt": "2026-08-04T10:47:30.833Z",
+  "type": "images"
+}

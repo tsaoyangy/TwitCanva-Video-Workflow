@@ -1,0 +1,18 @@
+{
+  "id": "api-test-1784626731740",
+  "topic": "New Chat",
+  "createdAt": "2026-07-21T09:38:51.798Z",
+  "updatedAt": "2026-07-21T09:38:55.164Z",
+  "messages": [
+    {
+      "role": "user",
+      "content": "请只回复：ok",
+      "timestamp": "2026-07-21T09:38:55.168Z"
+    },
+    {
+      "role": "assistant",
+      "content": "ok",
+      "timestamp": "2026-07-21T09:38:55.168Z"
+    }
+  ]
+}

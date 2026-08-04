@@ -1,0 +1,27 @@
+{
+  "id": "33be1f56-62e5-49cd-afca-e058694c48f3",
+  "title": "Untitled Canvas",
+  "nodes": [
+    {
+      "id": "90e2885b-0e7c-46a0-a0f4-0a4e77bb9d3c",
+      "type": "Image",
+      "x": 369,
+      "y": 226.5,
+      "prompt": "",
+      "status": "idle",
+      "model": "Banana Pro",
+      "aspectRatio": "Auto",
+      "resolution": "Auto",
+      "parentIds": [],
+      "imageModel": "gpt-image-1.5"
+    }
+  ],
+  "groups": [],
+  "viewport": {
+    "x": 36,
+    "y": -101,
+    "zoom": 1
+  },
+  "updatedAt": "2026-07-20T10:33:42.920Z",
+  "createdAt": "2026-07-20T10:33:42.920Z"
+}

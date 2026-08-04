@@ -1,0 +1,10 @@
+{
+  "id": "api_test_vid_1784626808222",
+  "filename": "vid_1784627026324_cw6hj4g0s.mp4",
+  "prompt": "参考图中的咖啡杯保持主体一致，镜头缓慢推进，桌面有自然光变化",
+  "model": "seedance-2.0",
+  "aspectRatio": "16:9",
+  "resolution": "720p",
+  "createdAt": "2026-07-21T09:43:46.327Z",
+  "type": "videos"
+}

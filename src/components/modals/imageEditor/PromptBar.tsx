@@ -6,7 +6,7 @@
  */
 
 import React, { useRef, useEffect } from 'react';
-import { ChevronDown, Check, Banana, Image as ImageIcon, Crop, Monitor } from 'lucide-react';
+import { ChevronDown, Check, Image as ImageIcon, Crop, Monitor } from 'lucide-react';
 import { ImageModel, IMAGE_MODELS } from './imageEditor.types';
 import { OpenAIIcon, KlingIcon } from '../../icons/BrandIcons';
 
@@ -104,8 +104,8 @@ export const PromptBar: React.FC<PromptBarProps> = ({
                     onClick={() => setShowModelDropdown(!showModelDropdown)}
                     className="flex items-center gap-1 text-[11px] text-neutral-300 hover:bg-neutral-700 px-2 py-1.5 rounded-md transition-colors border border-neutral-600"
                 >
-                    {currentModel.provider === 'google' ? (
-                        <Banana size={11} className="text-yellow-400" />
+                    {currentModel.provider === 'volcengine' ? (
+                        <ImageIcon size={11} className="text-cyan-400" />
                     ) : currentModel.provider === 'openai' ? (
                         <OpenAIIcon size={11} className="text-green-400" />
                     ) : currentModel.provider === 'kling' ? (
@@ -143,17 +143,17 @@ export const PromptBar: React.FC<PromptBarProps> = ({
                                 ))}
                             </>
                         )}
-                        {availableModels.filter(m => m.provider === 'google').length > 0 && (
+                        {availableModels.filter(m => m.provider === 'volcengine').length > 0 && (
                             <>
-                                <div className="px-3 py-1.5 text-[10px] font-bold text-neutral-500 uppercase tracking-wider bg-[#1f1f1f] border-t border-neutral-700">Google</div>
-                                {availableModels.filter(m => m.provider === 'google').map(model => (
+                                <div className="px-3 py-1.5 text-[10px] font-bold text-neutral-500 uppercase tracking-wider bg-[#1f1f1f] border-t border-neutral-700">Volcengine</div>
+                                {availableModels.filter(m => m.provider === 'volcengine').map(model => (
                                     <button
                                         key={model.id}
                                         onClick={() => onModelChange(model.id)}
                                         className={`w-full flex items-center justify-between px-3 py-2 text-xs text-left hover:bg-[#333] transition-colors ${currentModel.id === model.id ? 'text-blue-400' : 'text-neutral-300'}`}
                                     >
                                         <span className="flex items-center gap-2">
-                                            <Banana size={12} className="text-yellow-400" />
+                                            <ImageIcon size={12} className="text-cyan-400" />
                                             {model.name}
                                         </span>
                                         {currentModel.id === model.id && <Check size={12} />}

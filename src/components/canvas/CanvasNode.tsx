@@ -15,7 +15,7 @@ import { ChangeAnglePanel } from './ChangeAnglePanel';
 interface CanvasNodeProps {
   data: NodeData;
   inputUrl?: string;
-  connectedImageNodes?: { id: string; url: string; type?: NodeType }[]; // For frame-to-frame video mode and motion control
+  connectedImageNodes?: { id: string; url: string; resultUrl?: string; tosPublicUrl?: string; type?: NodeType }[]; // For frame-to-frame video mode and motion control
   onUpdate: (id: string, updates: Partial<NodeData>) => void;
   onGenerate: (id: string) => void;
   onAddNext: (id: string, type: 'left' | 'right') => void;
@@ -39,6 +39,7 @@ interface CanvasNodeProps {
   onImageToImage?: (nodeId: string) => void;
   onImageToVideo?: (nodeId: string) => void;
   onChangeAngleGenerate?: (nodeId: string) => void;
+  onOpenSeedreamEditor?: (nodeId: string) => void;
   zoom: number;
   // Mouse event callbacks for chat panel drag functionality
   onMouseEnter?: () => void;
@@ -75,6 +76,7 @@ export const CanvasNode: React.FC<CanvasNodeProps> = ({
   onImageToImage,
   onImageToVideo,
   onChangeAngleGenerate,
+  onOpenSeedreamEditor,
   zoom,
   onMouseEnter,
   onMouseLeave,
@@ -926,6 +928,7 @@ export const CanvasNode: React.FC<CanvasNodeProps> = ({
               onUpdate={onUpdate}
               onGenerate={onGenerate}
               onChangeAngleGenerate={onChangeAngleGenerate}
+              onOpenSeedreamEditor={onOpenSeedreamEditor}
               onSelect={onSelect}
               zoom={zoom}
               canvasTheme={canvasTheme}

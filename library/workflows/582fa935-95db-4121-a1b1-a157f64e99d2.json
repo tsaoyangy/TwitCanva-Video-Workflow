@@ -1,0 +1,27 @@
+{
+  "id": "582fa935-95db-4121-a1b1-a157f64e99d2",
+  "title": "Untitled Canvas",
+  "nodes": [
+    {
+      "id": "180fa291-c26c-493a-927d-40fc6a7f4149",
+      "type": "Image",
+      "x": 335,
+      "y": 261.5,
+      "prompt": "",
+      "status": "idle",
+      "model": "Banana Pro",
+      "aspectRatio": "Auto",
+      "resolution": "Auto",
+      "parentIds": [],
+      "imageModel": "seedream-5.0-pro"
+    }
+  ],
+  "groups": [],
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  },
+  "updatedAt": "2026-07-20T11:11:56.884Z",
+  "createdAt": "2026-07-20T11:11:56.884Z"
+}

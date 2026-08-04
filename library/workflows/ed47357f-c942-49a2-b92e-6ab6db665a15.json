@@ -1,0 +1,387 @@
+{
+  "id": "ed47357f-c942-49a2-b92e-6ab6db665a15",
+  "title": "漫短剧素材精细化编辑",
+  "nodes": [
+    {
+      "id": "9429b3c4-9a90-4b3f-87a8-3b1a8535305b",
+      "type": "Image",
+      "x": -277.2453971295659,
+      "y": 2731.0362169995997,
+      "prompt": "",
+      "status": "success",
+      "model": "Banana Pro",
+      "aspectRatio": "16:9",
+      "resolution": "1K",
+      "parentIds": [],
+      "imageModel": "seedream-5.0-pro",
+      "resultUrl": "/library/images/wf_1785759652071_emg31o.png",
+      "resultAspectRatio": "1280/714"
+    },
+    {
+      "id": "cafd5c81-6942-445b-8922-4f8bed331cb7",
+      "type": "Image",
+      "x": 189.47497755335473,
+      "y": 3038.7771176355614,
+      "prompt": "",
+      "status": "success",
+      "model": "Banana Pro",
+      "aspectRatio": "16:9",
+      "resolution": "Auto",
+      "parentIds": [],
+      "imageModel": "gpt-image-1.5",
+      "resultUrl": "/library/images/wf_1785759652078_a9vozo.png",
+      "resultAspectRatio": "1280/714"
+    },
+    {
+      "id": "47e804b1-9f28-40aa-afca-a2e8150b984e",
+      "type": "Video",
+      "x": 1803.699448525541,
+      "y": 3601.3529356111508,
+      "prompt": "cinematic lighting，8k画质，电影质感，细节丰富，光影层次感强，有环境音，无背景音乐，无字幕，字幕透明度为100%，大师级电影运镜，模仿真人短剧拍摄镜头，模仿影视短剧节奏，模仿优秀运镜和表演、运镜。画面风格为原生无字幕短视频，无信息条，无字幕条。保持无字幕，避免画面生成字幕。所有对白和音效仅通过声音呈现，画面中不叠加任何文字或字幕。\n【基础信息】\n时间：白天\n场景：将@图片5作为玄元殿场景参考，场地宽阔大气，殿宇恢弘气派（大殿上人物比例大小参考@图片5），将@图片4作为森林俯视场景参考，将@图片6作为试炼地形图参考\n人物：将@图片1中的人物定义为穆兰，将@图片2中的人物定义为铁重，将@图片3中的人物定义为端木青，三人并排站在殿门口的平台上（不在楼梯上）面对镜头方向，穆兰站在中间，铁重站在左边，端木青站在右边\n镜头一：仰拍右摇镜头，中近景，正侧面拍摄，镜头前推，从左到右依次拍摄铁重，穆兰，端木青，三人面向镜头，庄重，严肃的微微俯视从左到右扫看向镜头方向，铁重右手捋胡子肯定的点点头，穆兰满意的微笑，端木青有一丝不屑的看着镜头下方。\n镜头二：运镜中景（带到铁重和端木青）拉中远镜，特写穆兰脚部向前走了一步，正面拍摄三人中穆兰从容上前踏出一步，镜头快速上摇，拍摄穆兰抬右手轻咳清嗓后，右手挥洒出现一些蓝紫色粒子特效和烟雾（镜头拉远，拍摄到铁重和端木青正面站立虚焦），随着镜头拉远，蓝紫色粒子特效和烟雾逐渐汇聚在三人身后，形成一团烟雾粒子，随即展开垂直于地面铺平为一张魔法幻化而成的平片地图，地图生成后固定悬浮在三人身后半空中，保持位置稳定不跟随镜头移动，穆兰微微侧身目光望向身后半空固定悬浮的试炼地形图，切中景拍摄穆兰伸出左手指向地图方向，眼神看向镜头方向，神色沉稳端庄，穆兰语气清亮严肃，当众宣读规则{现在！我来宣布一下此次试炼的规则！}\n随着穆兰说话，画面向人物身后的地图场景推进，使@图片6的地图画面铺满整个画面，全程只展示地图，不露出其他背景（如森林），保证画面中没有人物，镜头继续向地图推进，最后虚焦表示进入地图场景",
+      "status": "success",
+      "model": "Banana Pro",
+      "aspectRatio": "16:9",
+      "resolution": "1080p",
+      "parentIds": [
+        "56d8319c-132e-489a-aba5-b3c1533ddb2b",
+        "cafd5c81-6942-445b-8922-4f8bed331cb7",
+        "25c4e6a5-2d3b-4911-a1ac-a005e5a64123",
+        "35e127d4-09a0-41ee-955e-498964d2bd1a",
+        "8999649a-0016-4359-a100-74048e43c1f7",
+        "3671a8ea-918e-4120-a817-7e9edff47435",
+        "9bb1eafd-8b7f-4054-8833-2e0312203365"
+      ],
+      "videoModel": "seedance-2.0",
+      "videoDuration": 15,
+      "isPromptExpanded": true,
+      "generationStartTime": 1785762922715,
+      "seedanceReferenceOrder": [
+        {
+          "type": "node",
+          "id": "8999649a-0016-4359-a100-74048e43c1f7"
+        },
+        {
+          "type": "node",
+          "id": "3671a8ea-918e-4120-a817-7e9edff47435"
+        },
+        {
+          "type": "node",
+          "id": "35e127d4-09a0-41ee-955e-498964d2bd1a"
+        },
+        {
+          "type": "node",
+          "id": "9bb1eafd-8b7f-4054-8833-2e0312203365"
+        },
+        {
+          "type": "node",
+          "id": "56d8319c-132e-489a-aba5-b3c1533ddb2b"
+        },
+        {
+          "type": "node",
+          "id": "25c4e6a5-2d3b-4911-a1ac-a005e5a64123"
+        },
+        {
+          "type": "node",
+          "id": "cafd5c81-6942-445b-8922-4f8bed331cb7"
+        }
+      ],
+      "resultUrl": "/library/videos/vid_1785763333309_xmbu1t1xn.mp4?t=1785763337485",
+      "tosPublicUrl": "https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com/twitcanva/video/vid_1785763333309_xmbu1t1xn.mp4",
+      "resultAspectRatio": "1920/1080",
+      "lastFrame": "/library/images/wf_1785763823739_2upc4s.png"
+    },
+    {
+      "id": "3671a8ea-918e-4120-a817-7e9edff47435",
+      "type": "Image",
+      "x": 89.9300684613674,
+      "y": 3611.340614998756,
+      "prompt": "古风仙侠男性角色设定图，一位约五十余岁的威严长者。银白色长发向后梳理、发梢渐变为暗红色，白色上扬剑眉，面容清癯、颧骨分明、眼周与额头有岁月皱纹，下颌灰白短须，神情冷峻沉稳。身穿交领宽袖长袍：外袍为象牙白色、内衬暗红，肩部与衣袖绣有深灰蓝色猛虎与云纹图腾，腰束金属圆牌腰带并垂暗红色流苏玉佩。\n\n画面为角色三视图：左侧为面部大特写，右侧依次为正面全身、侧面全身、背面全身立绘（背面清晰展示后背整只猛虎刺绣与白转红的长发）。纯白摄影棚无缝背景，柔和均匀的正面棚拍布光。\n\n写实电影级 CG 质感，8K 超高清，皮肤纹理与织物质感细腻，光影自然，色彩沉稳。",
+      "status": "success",
+      "model": "Banana Pro",
+      "aspectRatio": "16:9",
+      "resolution": "2K",
+      "parentIds": [],
+      "imageModel": "seedream-5.0-pro",
+      "generationStartTime": 1785759759347,
+      "resultUrl": "/library/images/img_1785759859388_47b5v8s2k.png?t=1785759859393",
+      "resultAspectRatio": "2048/1152"
+    },
+    {
+      "id": "8999649a-0016-4359-a100-74048e43c1f7",
+      "type": "Image",
+      "x": -161.5971032324639,
+      "y": 4115.953345090613,
+      "prompt": "古风仙侠女性角色设定图，一位约二十岁的清秀端庄女子。黑色长发，头顶挽半扎发髻、系白色飘逸发带，余发垂至腰际；鹅蛋脸、柳叶细眉、杏眼含神、鼻梁挺秀、唇色裸粉，妆容淡雅自然，皮肤白皙细腻，神情沉静温婉。身穿交领宽袖齐胸襦裙，轻薄纱质，衣裙颜色由上至下从白色渐变晕染为淡紫色，衣袖点缀淡雅暗纹刺绣，腰束同色系宽腰带打结。\n\n画面为角色三视图：左侧为面部大特写，右侧依次为正面全身、侧面全身、背面全身立绘（背面清晰展示垂坠的白色发带与及腰长发）。纯白摄影棚无缝背景，柔和均匀的正面棚拍布光。",
+      "status": "success",
+      "model": "Banana Pro",
+      "aspectRatio": "16:9",
+      "resolution": "2K",
+      "parentIds": [],
+      "imageModel": "seedream-5.0-pro",
+      "generationStartTime": 1785759782717,
+      "resultUrl": "/library/images/img_1785759893113_w583g4ezn.png?t=1785759893118",
+      "resultAspectRatio": "2048/1152"
+    },
+    {
+      "id": "d3b55a53-0530-4178-b62e-c77f8b3e8406",
+      "type": "Image",
+      "x": 573.5195953319104,
+      "y": 3860.7801398048855,
+      "prompt": "这个头发应该覆盖在背后的猛虎图案之上",
+      "status": "success",
+      "resultUrl": "/library/images/img_1785759957986_kd7x1u0gi.png?t=1785759958003",
+      "parentIds": [
+        "3671a8ea-918e-4120-a817-7e9edff47435"
+      ],
+      "model": "Seedream 5.0 Pro",
+      "imageModel": "seedream-5.0-pro",
+      "aspectRatio": "16:9",
+      "resolution": "2K",
+      "resultAspectRatio": "2816/1584"
+    },
+    {
+      "id": "cab15c76-7ae8-477c-966c-938a0d416fbb",
+      "type": "Image",
+      "x": 730.305961521821,
+      "y": 4226.725707132224,
+      "prompt": "在标注区域增加一道浅浅的疤，一道已经快恢复好的疤，注意疤痕和脸部质感融合一致",
+      "status": "success",
+      "parentIds": [
+        "8999649a-0016-4359-a100-74048e43c1f7"
+      ],
+      "model": "Seedream 5.0 Pro",
+      "imageModel": "seedream-5.0-pro",
+      "aspectRatio": "16:9",
+      "resolution": "2K",
+      "generationStartTime": 1785760481338,
+      "resultUrl": "/library/images/img_1785760529627_cxavqkmp8.png?t=1785760529635",
+      "resultAspectRatio": "2816/1584"
+    },
+    {
+      "id": "b4912e1f-a674-4c09-b8f9-2b3565a522d2",
+      "type": "Image",
+      "x": 1342.4037905636383,
+      "y": 4273.436216358648,
+      "prompt": "把标注区域的疤去掉",
+      "status": "success",
+      "parentIds": [
+        "cab15c76-7ae8-477c-966c-938a0d416fbb"
+      ],
+      "model": "Seedream 5.0 Pro",
+      "imageModel": "seedream-5.0-pro",
+      "aspectRatio": "16:9",
+      "resolution": "2K",
+      "generationStartTime": 1785760653910,
+      "resultUrl": "/library/images/img_1785760704234_v20rskp5d.png?t=1785760704245",
+      "resultAspectRatio": "2816/1584"
+    },
+    {
+      "id": "35e127d4-09a0-41ee-955e-498964d2bd1a",
+      "type": "Image",
+      "x": 217.80527627665433,
+      "y": 3333.419592026431,
+      "prompt": "古风仙侠男性长者角色设定图，一位约五十余岁、仙风道骨的宗师。黑灰花白长发向后梳理、束于头顶发髻并以金冠发簪固定，余发垂至腰背；灰白长眉，胸前垂花白长须，面容清癯、颧骨分明、神情威严沉静。身穿交领广袖长袍（汉服/道袍形制），以墨绿深青色为主、内衬浅青绿，通身绣金色云龙纹、饰黑色滚边，腰束金属圆牌腰带，广袖与下摆飘带层叠，气度雍容。\n\n画面为角色三视图：左侧为面部大特写，右侧依次为正面全身、侧面全身、背面全身立绘（背面清晰展示后背整条金色盘龙刺绣与垂至腰背的花白长发）。纯白摄影棚无缝背景，柔和均匀的正面棚拍布光。\n\n写实电影级 CG 质感，8K 超高清，皮肤须发纹理与丝绸刺绣质感细腻，光影自然，色彩沉稳华贵。",
+      "status": "success",
+      "model": "Banana Pro",
+      "aspectRatio": "16:9",
+      "resolution": "2K",
+      "parentIds": [],
+      "imageModel": "seedream-5.0-pro",
+      "generationStartTime": 1785760954459,
+      "resultUrl": "/library/images/img_1785761050558_mrj9uuqx0.png?t=1785761050564",
+      "resultAspectRatio": "2048/1152"
+    },
+    {
+      "id": "25c4e6a5-2d3b-4911-a1ac-a005e5a64123",
+      "type": "Image",
+      "x": 291.6261064050315,
+      "y": 2700.4696555067326,
+      "prompt": "在标记位置加两个大小相同的石狮",
+      "status": "success",
+      "parentIds": [
+        "9429b3c4-9a90-4b3f-87a8-3b1a8535305b"
+      ],
+      "model": "Seedream 5.0 Pro",
+      "imageModel": "seedream-5.0-pro",
+      "aspectRatio": "16:9",
+      "resolution": "1K",
+      "generationStartTime": 1785761345465,
+      "resultUrl": "/library/images/img_1785761368322_jp3869ie2.png?t=1785761368327",
+      "resultAspectRatio": "1424/800"
+    },
+    {
+      "id": "9bb1eafd-8b7f-4054-8833-2e0312203365",
+      "type": "Image",
+      "x": 130.71413983099518,
+      "y": 4753.335124033684,
+      "prompt": "",
+      "status": "success",
+      "model": "Banana Pro",
+      "aspectRatio": "16:9",
+      "resolution": "Auto",
+      "parentIds": [],
+      "imageModel": "gpt-image-1.5",
+      "resultUrl": "/library/images/wf_1785763823741_v9d3bf.jpg",
+      "resultAspectRatio": "1280/714"
+    },
+    {
+      "id": "fd12f195-7b6e-4fd0-aab3-b3ec93c594aa",
+      "type": "Image",
+      "x": 335.2724222834957,
+      "y": 4432.16914542059,
+      "prompt": "在标注区域增加一道浅浅的疤，一道已经快恢复好的疤，注意疤痕和脸部质感融合一致",
+      "status": "success",
+      "parentIds": [
+        "8999649a-0016-4359-a100-74048e43c1f7"
+      ],
+      "model": "Seedream 5.0 Pro",
+      "imageModel": "seedream-5.0-pro",
+      "aspectRatio": "16:9",
+      "resolution": "1K",
+      "generationStartTime": 1785815912137,
+      "resultUrl": "/library/images/img_1785815944486_unpd4mz0f.png?t=1785815944494",
+      "resultAspectRatio": "1424/800"
+    },
+    {
+      "id": "9a892679-cf1e-4dae-9c52-23f5c27575c3",
+      "type": "Image",
+      "x": 718.7448551525571,
+      "y": 5021.78671305059,
+      "prompt": "Extract panel #1 from this storyboard reference image. Keep all characters, environment, colors, art style, and composition exactly the same. Recreate only this single panel as a standalone 16:9 image.",
+      "status": "success",
+      "model": "seedream-5.0-pro",
+      "imageModel": "seedream-5.0-pro",
+      "aspectRatio": "16:9",
+      "resolution": "1K",
+      "title": "Scene 1",
+      "parentIds": [],
+      "groupId": "5397cd74-e57b-4756-8a76-14896d0b5ec3",
+      "characterReferenceUrls": [
+        "/library/images/storyboard_composite_1785840370175.png"
+      ],
+      "generationStartTime": 1785840378056,
+      "resultUrl": "/library/images/img_1785840450830_99hk1r5o3.png?t=1785840450837",
+      "resultAspectRatio": "1536/864"
+    },
+    {
+      "id": "39efbd07-7cf7-4757-8d15-e880cc47dbdd",
+      "type": "Image",
+      "x": 1181.7386543009522,
+      "y": 5014.1221133344525,
+      "prompt": "Extract panel #2 from this storyboard reference image. Keep all characters, environment, colors, art style, and composition exactly the same. Recreate only this single panel as a standalone 16:9 image.",
+      "status": "success",
+      "model": "seedream-5.0-pro",
+      "imageModel": "seedream-5.0-pro",
+      "aspectRatio": "16:9",
+      "resolution": "1K",
+      "title": "Scene 2",
+      "parentIds": [],
+      "groupId": "5397cd74-e57b-4756-8a76-14896d0b5ec3",
+      "characterReferenceUrls": [
+        "/library/images/storyboard_composite_1785840370175.png"
+      ],
+      "generationStartTime": 1785840378557,
+      "resultUrl": "/library/images/img_1785840457432_ncambl40n.png?t=1785840457436",
+      "resultAspectRatio": "1536/864"
+    },
+    {
+      "id": "2b2de7d2-ca5e-49a0-b63b-c8469395209b",
+      "type": "Image",
+      "x": 1598.744855152558,
+      "y": 5014.122113334452,
+      "prompt": "Extract panel #3 from this storyboard reference image. Keep all characters, environment, colors, art style, and composition exactly the same. Recreate only this single panel as a standalone 16:9 image.",
+      "status": "success",
+      "model": "seedream-5.0-pro",
+      "imageModel": "seedream-5.0-pro",
+      "aspectRatio": "16:9",
+      "resolution": "1K",
+      "title": "Scene 3",
+      "parentIds": [],
+      "groupId": "5397cd74-e57b-4756-8a76-14896d0b5ec3",
+      "characterReferenceUrls": [
+        "/library/images/storyboard_composite_1785840370175.png"
+      ],
+      "generationStartTime": 1785840379057,
+      "resultUrl": "/library/images/img_1785840474815_y81diuk4y.png?t=1785840474823",
+      "resultAspectRatio": "1536/864"
+    }
+  ],
+  "groups": [
+    {
+      "id": "5397cd74-e57b-4756-8a76-14896d0b5ec3",
+      "nodeIds": [
+        "9a892679-cf1e-4dae-9c52-23f5c27575c3",
+        "39efbd07-7cf7-4757-8d15-e880cc47dbdd",
+        "2b2de7d2-ca5e-49a0-b63b-c8469395209b"
+      ],
+      "label": "Storyboard 18:46:17",
+      "storyContext": {
+        "story": "Beneath heavy overcast skies, the jagged, moss-draped karst peaks of @background rise from unbroken ancient rainforest, wispy mist coiling through the dense green canopy as flocks of white egrets wheel between craggy spires. @shortdrama, clad in her flowing white-to-lavender gradient hanfu with a white silk ribbon tied in her long black hair, pauses breathless on a narrow mossy ledge, chasing the faint glow of a sacred mountain relic she has spent years seeking. When a loose stone sends her teetering over the ledge edge, @shortdrama02 — the reclusive silver-haired mountain guardian in ivory silk robes embroidered with stalking black tigers, his long hair fading to deep crimson at the tips — drifts down through the mist to catch her wrist, the inked tiger on his sleeve seeming to flicker to life as he sets her safely back on solid stone. He wordlessly presses the glowing sacred relic into her outstretched palm before fading back into the wreathes of mountain mist, leaving her standing awestruck as a slant of golden sun breaks through the clouds to gild the rainforest canopy around her.",
+        "scripts": [
+          {
+            "sceneNumber": 1,
+            "description": "Beneath heavy brooding overcast skies, the jagged moss-draped karst peaks of @background rise from an unbroken expanse of ancient emerald rainforest, thin wispy mist coiling through the treetops as small flocks of white egrets wheel between the craggy spires. Far up on a narrow, moss-carpeted stone ledge cut into one steep peak, @shortdrama pauses breathless from her long climb, chest rising and falling as her eyes fix on a faint warm golden glow emanating from a rock crevice just ahead, the hem of her sheer gradient hanfu stirring softly in the cool mountain breeze.",
+            "cameraAngle": "Extreme wide aerial establishing shot",
+            "cameraMovement": "Slow crane descent",
+            "lighting": "Diffused cool overcast daylight, soft muted grey light filtering through thick cloud cover, with only the faint warm pinprick glow of the hidden relic cutting through the thin drifting mountain mist",
+            "mood": "Reverent, quiet, thrumming with slow-burning anticipation after years of searching"
+          },
+          {
+            "sceneNumber": 2,
+            "description": "@shortdrama steps forward to reach for the warm glow, her boot dislodging a loose moss-slick stone that skitters off the ledge into the empty valley far below; she flails as her balance gives out, tipping over the edge with a sharp, quiet gasp, fingers scrabbling uselessly for purchase on smooth wet rock. Before she can fall more than a foot, @shortdrama02 drifts weightlessly down through the curling mist, his ivory robe sleeves billowing around him, one firm, cool hand closing gently but securely around her outstretched wrist; the ink-black tiger embroidery on his sleeve seems to shift and flicker as if alive as he pulls her slowly back to steady footing on the ledge, his expression calm and unreadable as he meets her wide, startled eyes.",
+            "cameraAngle": "Medium two-shot, slightly low angle to frame the sheer valley drop beyond the ledge",
+            "cameraMovement": "Handheld, with subtle shaky movement to mirror @shortdrama's sudden loss of balance, steadying completely as @shortdrama02 secures her wrist",
+            "lighting": "Cool diffused mountain light wrapping around drifting mist, the faint warm glow of the relic gilding the edges of both figures' silk robes, soft deep shadows pooling in the rock crevices at their feet",
+            "mood": "Sharp, breathless tension giving way to stunned, quiet awe at the guardian's sudden, silent arrival"
+          },
+          {
+            "sceneNumber": 3,
+            "description": "@shortdrama02 does not speak, simply lifting his free hand to press the softly pulsing golden sacred relic into @shortdrama's outstretched, trembling palm; before she can form a word of gratitude, his form begins to dissolve back into the wispy mountain mist, the dark tiger embroidery on his sleeve the last detail to fade into the fog. A slant of warm golden sunlight breaks through the heavy overcast clouds directly above, gilding the rainforest canopy around her and catching the glow of the relic in her hand as she stands awestruck, fingers curled gently around the warm smooth object, eyes wide with quiet wonder as the last wisp of the guardian's robe vanishes into the mountain air.",
+            "cameraAngle": "Tight close-up pulling back to epic wide shot",
+            "cameraMovement": "Slow crane up and back",
+            "lighting": "A sharp, warm slant of breakthrough sunlight cutting through cool mist, creating visible god rays that catch floating mist motes, contrasting with the remaining soft cool shadow on the lower mountain slopes, the warm glow of the relic in @shortdrama's palm mirroring the sun's golden light",
+            "mood": "Transcendent, reverent, soft with quiet fulfillment as her years-long search comes to an unexpected, gentle end"
+          }
+        ],
+        "selectedCharacters": [
+          {
+            "id": "60aff10d-bf1b-407e-9c2c-b3332474221d",
+            "name": "background",
+            "url": "/library/assets/Character/background.jpg",
+            "description": "",
+            "category": "Character"
+          },
+          {
+            "id": "b737ed6a-78a5-4b27-abf8-3d37e6bfc280",
+            "name": "shortdrama02",
+            "url": "/library/assets/Character/shortdrama02.png",
+            "description": "",
+            "category": "Character"
+          },
+          {
+            "id": "32a81fef-b10d-4a77-81fd-2e853c4f7bd0",
+            "name": "shortdrama",
+            "url": "/library/assets/Character/shortdrama.png",
+            "description": "",
+            "category": "Character"
+          }
+        ],
+        "sceneCount": 3,
+        "styleAnchor": "photorealistic wuxia cinematic aesthetic, 35mm film grain, soft atmospheric haze, hyper-detailed fabric and foliage texture, natural muted color grading, selective shallow depth of field",
+        "characterDNA": {
+          "background": "Expansive ancient tropical rainforest landscape of jagged, moss-draped karst limestone peaks rising from unbroken dense emerald canopy, wispy cool mist coiling through treetops, flocks of white egrets flying between craggy spires, heavy layered grey overcast skies stretching to the distant hazy horizon",
+          "shortdrama02": "East Asian male in his late 60s, long straight silver-white hair fading to deep crimson at the tips, thick white brows, neatly trimmed silver goatee, wearing an ivory silk wide-sleeved hanfu robe embroidered with ink-black stalking tigers and swirling cloud motifs, deep burgundy inner collar and sleeve linings, ornate bronze medallion belt with hanging red tassel pendant, plain white embroidered cloth boots, solemn, calm, ageless demeanor",
+          "shortdrama": "East Asian female in her early 20s, long jet-black hair styled in a half-up high bun secured with a long flowing white silk ribbon that falls down her back, soft delicate features, wearing a sheer flowing white-to-lavender gradient hanfu robe with subtle white floral embroidery on the wide chiffon sleeves, matching lavender waist sash tied in a bow, layered sheer skirt fading from white at the bodice to soft lavender at the hem"
+        },
+        "compositeImageUrl": "/library/images/storyboard_composite_1785840370175.png"
+      }
+    }
+  ],
+  "viewport": {
+    "x": 391.9161452531014,
+    "y": -1473.2178858946265,
+    "zoom": 0.391409872806007
+  },
+  "updatedAt": "2026-08-04T10:48:55.071Z",
+  "createdAt": "2026-08-04T10:48:55.071Z"
+}

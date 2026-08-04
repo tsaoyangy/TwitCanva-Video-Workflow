@@ -1,0 +1,13 @@
+{
+  "id": "b187d46c-7f69-4bee-b2ac-1e3f53b98104",
+  "filename": "vid_1784644655464_yzmry6yut.mp4",
+  "prompt": "把参考视频一中的人物替换成参考图一中的短发单眼皮女生，其他不变",
+  "model": "seedance-2.0",
+  "aspectRatio": "9:16",
+  "resolution": "720p",
+  "createdAt": "2026-07-21T14:37:46.438Z",
+  "type": "videos",
+  "tosBucket": "arkclaw--tsaoyang",
+  "tosKey": "twitcanva/video/vid_1784644655464_yzmry6yut.mp4",
+  "tosPublicUrl": "https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com/twitcanva/video/vid_1784644655464_yzmry6yut.mp4"
+}

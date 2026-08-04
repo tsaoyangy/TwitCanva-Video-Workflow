@@ -1,0 +1,18 @@
+{
+  "id": "smoke-seed-chat",
+  "topic": "Creative Project Help",
+  "createdAt": "2026-07-20T10:47:53.410Z",
+  "updatedAt": "2026-07-20T10:50:01.077Z",
+  "messages": [
+    {
+      "role": "user",
+      "content": "hi",
+      "timestamp": "2026-07-20T10:50:01.086Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Hi there! 👋 Welcome to TwitCanva's creative assistant!\n\nWhether you're brainstorming ideas for social media graphics, AI art, or video projects, need help crafting the perfect generation prompt, want feedback on a piece you've made, or just need a spark of creative inspiration, I'm here to help.\n\nA few quick things I can support you with:\n- Build detailed, structured prompts for any visual style (photorealistic, anime, retro, watercolor, cinematic, etc.)\n- Brainstorm content ideas for Reels/TikToks, social posts, marketing assets, or personal creative projects\n- Share composition, color, and lighting tips to make your visuals pop\n- Help you nail a specific vibe or aesthetic you're going for\n\nWhat are you working on today? 😊",
+      "timestamp": "2026-07-20T10:50:01.086Z"
+    }
+  ]
+}

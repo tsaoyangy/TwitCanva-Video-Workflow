@@ -2,13 +2,58 @@
  * storyboard.js
  * 
  * Routes for AI storyboard script generation.
- * Uses Gemini 2.0 Flash for generating scene descriptions from user story input.
+ * Uses Seed 2.1 for storyboard text generation and Seedream 5.0 Pro for composite images.
  */
 
 import express from 'express';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { createSeedChatCompletion, extractJsonFromText, generateSeedreamImage, partsToArkContent } from '../services/ark.js';
 
 const router = express.Router();
+
+function requireArkApiKey(req, res) {
+    const { ARK_API_KEY } = req.app.locals;
+    if (!ARK_API_KEY) {
+        res.status(500).json({
+            error: "ARK_API_KEY not configured. Add ARK_API_KEY to .env"
+        });
+        return null;
+    }
+    return ARK_API_KEY;
+}
+
+async function generateSeedText({ apiKey, promptParts, responseFormat, maxTokens = 4096, temperature = 0.7 }) {
+    const { text } = await createSeedChatCompletion({
+        apiKey,
+        messages: [{
+            role: 'user',
+            content: partsToArkContent(promptParts)
+        }],
+        responseFormat,
+        maxTokens,
+        temperature
+    });
+    return text;
+}
+
+function promptPartsToSeedreamInput(parts = []) {
+    const promptTexts = [];
+    const imageBase64Array = [];
+
+    for (const part of parts) {
+        if (typeof part === 'string') {
+            promptTexts.push(part);
+        } else if (part?.text) {
+            promptTexts.push(part.text);
+        } else if (part?.inlineData?.data) {
+            imageBase64Array.push(`data:${part.inlineData.mimeType};base64,${part.inlineData.data}`);
+        }
+    }
+
+    return {
+        prompt: promptTexts.join('\n\n'),
+        imageBase64Array
+    };
+}
 
 /**
  * Helper to retry async operations with exponential backoff
@@ -36,7 +81,7 @@ async function retryOperation(operation, maxRetries = 3, initialDelayMs = 2000) 
 // ============================================================================
 
 /**
- * Generate storyboard scripts using Gemini LLM
+ * Generate storyboard scripts using Seed 2.1
  * 
  * POST /api/storyboard/generate-scripts
  * Body: { story, characterDescriptions, sceneCount }
@@ -45,14 +90,10 @@ async function retryOperation(operation, maxRetries = 3, initialDelayMs = 2000) 
 router.post('/generate-scripts', async (req, res) => {
     try {
         const { story, characterDescriptions, sceneCount, referenceImages, characterImages } = req.body;
-        const { GEMINI_API_KEY } = req.app.locals;
+        const ARK_API_KEY = requireArkApiKey(req, res);
         const { resolveImageToBase64 } = await import('../utils/imageHelpers.js');
 
-        if (!GEMINI_API_KEY) {
-            return res.status(500).json({
-                error: "Gemini API key not configured. Add GEMINI_API_KEY to .env"
-            });
-        }
+        if (!ARK_API_KEY) return;
 
         if (!story || !sceneCount) {
             return res.status(400).json({
@@ -69,10 +110,6 @@ router.post('/generate-scripts', async (req, res) => {
         }
 
         console.log(`[Storyboard] Generating ${count} scene scripts`);
-
-        // Initialize Gemini
-        const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
         // Categorize reference images
         const refs = referenceImages || [];
@@ -253,24 +290,20 @@ Respond ONLY with valid JSON, no other text.`;
             }
         }
 
-        // Call Gemini with RETRY logic
-        const result = await retryOperation(() => model.generateContent(promptParts));
-        const responseText = result.response.text();
+        // Call Seed 2.1 with RETRY logic
+        const responseText = await retryOperation(() => generateSeedText({
+            apiKey: ARK_API_KEY,
+            promptParts,
+            responseFormat: { type: 'json_object' },
+            maxTokens: 4096
+        }));
 
         // Parse JSON from response
         let parsed;
         try {
-            // Try to extract JSON from the response (handle potential markdown code blocks)
-            let jsonStr = responseText;
-            if (responseText.includes('```json')) {
-                jsonStr = responseText.split('```json')[1].split('```')[0].trim();
-            } else if (responseText.includes('```')) {
-                jsonStr = responseText.split('```')[1].split('```')[0].trim();
-            }
-
-            parsed = JSON.parse(jsonStr);
+            parsed = extractJsonFromText(responseText);
         } catch (parseError) {
-            console.error('[Storyboard] Failed to parse Gemini response:', parseError);
+            console.error('[Storyboard] Failed to parse Seed response:', parseError);
             console.error('[Storyboard] Raw response:', responseText);
             return res.status(500).json({
                 error: "Failed to parse AI response. Please try again."
@@ -307,7 +340,7 @@ Respond ONLY with valid JSON, no other text.`;
 // ============================================================================
 
 /**
- * Brainstorm a story using Gemini LLM based on selected characters
+ * Brainstorm a story using Seed 2.1 based on selected characters
  * 
  * POST /api/storyboard/brainstorm-story
  * Body: { characterDescriptions, genre? }
@@ -316,20 +349,12 @@ Respond ONLY with valid JSON, no other text.`;
 router.post('/brainstorm-story', async (req, res) => {
     try {
         const { characterDescriptions, genre, referenceImages, characterImages } = req.body;
-        const { GEMINI_API_KEY } = req.app.locals;
+        const ARK_API_KEY = requireArkApiKey(req, res);
         const { resolveImageToBase64 } = await import('../utils/imageHelpers.js');
 
-        if (!GEMINI_API_KEY) {
-            return res.status(500).json({
-                error: "Gemini API key not configured. Add GEMINI_API_KEY to .env"
-            });
-        }
+        if (!ARK_API_KEY) return;
 
         console.log(`[Storyboard] Brainstorming story with ${characterDescriptions?.length || 0} characters`);
-
-        // Initialize Gemini
-        const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
         // Build character context
         const characterContext = characterDescriptions && characterDescriptions.length > 0
@@ -400,9 +425,12 @@ Respond with ONLY the story synopsis, no additional text or formatting.`;
             }
         }
 
-        // Call Gemini with RETRY
-        const result = await retryOperation(() => model.generateContent(promptParts));
-        const story = result.response.text().trim();
+        // Call Seed 2.1 with RETRY
+        const story = (await retryOperation(() => generateSeedText({
+            apiKey: ARK_API_KEY,
+            promptParts,
+            maxTokens: 1024
+        }))).trim();
 
         console.log(`[Storyboard] Generated story: ${story.substring(0, 100)}...`);
 
@@ -428,13 +456,9 @@ Respond with ONLY the story synopsis, no additional text or formatting.`;
 router.post('/optimize-story', async (req, res) => {
     try {
         const { story, characterNames } = req.body;
-        const { GEMINI_API_KEY } = req.app.locals;
+        const ARK_API_KEY = requireArkApiKey(req, res);
 
-        if (!GEMINI_API_KEY) {
-            return res.status(500).json({
-                error: "Gemini API key not configured. Add GEMINI_API_KEY to .env"
-            });
-        }
+        if (!ARK_API_KEY) return;
 
         if (!story || typeof story !== 'string') {
             return res.status(400).json({
@@ -443,10 +467,6 @@ router.post('/optimize-story', async (req, res) => {
         }
 
         console.log(`[Storyboard] Optimizing story length: ${story.length} chars`);
-
-        // Initialize Gemini
-        const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
         const systemPrompt = `You are an expert storyboard artist and writer.
         
@@ -465,8 +485,11 @@ INSTRUCTIONS:
 
 Respond with ONLY the optimized story text.`;
 
-        const result = await retryOperation(() => model.generateContent(systemPrompt));
-        const optimizedStory = result.response.text().trim();
+        const optimizedStory = (await retryOperation(() => generateSeedText({
+            apiKey: ARK_API_KEY,
+            promptParts: [systemPrompt],
+            maxTokens: 1024
+        }))).trim();
 
         console.log(`[Storyboard] Optimized story: ${optimizedStory.substring(0, 50)}...`);
 
@@ -492,14 +515,10 @@ Respond with ONLY the optimized story text.`;
 router.post('/generate-composite', async (req, res) => {
     try {
         const { scripts, styleAnchor, characterDNA, sceneCount, referenceImages, characterImages } = req.body;
-        const { GEMINI_API_KEY } = req.app.locals;
+        const ARK_API_KEY = requireArkApiKey(req, res);
         const { resolveImageToBase64 } = await import('../utils/imageHelpers.js');
 
-        if (!GEMINI_API_KEY) {
-            return res.status(500).json({
-                error: "Gemini API key not configured. Add GEMINI_API_KEY to .env"
-            });
-        }
+        if (!ARK_API_KEY) return;
 
         if (!scripts || scripts.length === 0) {
             return res.status(400).json({
@@ -692,7 +711,7 @@ router.post('/generate-composite', async (req, res) => {
             return `Panel ${i + 1}: ${cleanDesc}. Camera: ${script.cameraAngle}. Mood: ${script.mood}.`;
         }).join('\n');
 
-        console.log('[Storyboard] Panel Descriptions Being Sent to Gemini:');
+        console.log('[Storyboard] Panel Descriptions Being Sent to Seedream:');
         console.log(panelDescriptions.substring(0, 500) + '...');
 
         // FORCE UNIFORM aspect ratio and layout
@@ -728,47 +747,34 @@ CRITICAL:
 3. LABELING: ADD A VISIBLE, HIGH-CONTRAST WHITE NUMBER (1, ${count > 1 ? '2, ' : ''}...) in the corner of each panel.`;
 
         console.log(`[Storyboard] Composite prompt preview: ${compositePrompt.substring(0, 100)}...`);
-        console.log(`[Storyboard] Sending request to Gemini... Parts: ${promptParts.length + 1}`);
+        console.log(`[Storyboard] Sending request to Seedream... Parts: ${promptParts.length + 1}`);
 
         promptParts.push({ text: compositePrompt });
 
-        // Initialize Gemini for image generation
-        const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-3-pro-image-preview',
-            generationConfig: {
-                // Adjusting timeout by NOT setting it (default is usually reasonable, but 503 suggests server-side limit)
-                responseModalities: ['Text', 'Image']
-            }
-        });
+        const seedreamInput = promptPartsToSeedreamInput(promptParts);
 
-        // Generate the composite image with RETRY
+        // Generate the composite image with Seedream and RETRY
         const startTime = Date.now();
-        const result = await retryOperation(() => model.generateContent(promptParts));
+        const imageBuffer = await retryOperation(() => generateSeedreamImage({
+            prompt: seedreamInput.prompt,
+            imageBase64Array: seedreamInput.imageBase64Array,
+            aspectRatio: '16:9',
+            resolution: '2K',
+            apiKey: ARK_API_KEY
+        }));
         const duration = Date.now() - startTime;
-        console.log(`[Storyboard] Gemini response received in ${duration}ms`);
+        console.log(`[Storyboard] Seedream response received in ${duration}ms`);
 
-        const response = result.response;
+        const timestamp = Date.now();
+        const fileName = `storyboard_composite_${timestamp}.png`;
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const assetsDir = req.app.locals.IMAGES_DIR || './library/images';
+        const filePath = path.join(assetsDir, fileName);
 
-        // Extract image from response
-        let imageUrl = null;
-        for (const part of response.candidates[0].content.parts) {
-            if (part.inlineData) {
-                // Save the image
-                const imageBuffer = Buffer.from(part.inlineData.data, 'base64');
-                const timestamp = Date.now();
-                const fileName = `storyboard_composite_${timestamp}.png`;
-                const fs = await import('fs/promises');
-                const path = await import('path');
-                const assetsDir = req.app.locals.IMAGES_DIR || './library/images';
-                const filePath = path.join(assetsDir, fileName);
-
-                await fs.writeFile(filePath, imageBuffer);
-                imageUrl = `/library/images/${fileName}`;
-                console.log(`[Storyboard] Composite image saved: ${imageUrl}`);
-                break;
-            }
-        }
+        await fs.writeFile(filePath, imageBuffer);
+        const imageUrl = `/library/images/${fileName}`;
+        console.log(`[Storyboard] Composite image saved: ${imageUrl}`);
 
         if (!imageUrl) {
             return res.status(500).json({

@@ -20,6 +20,16 @@ export enum NodeStatus {
   ERROR = 'error'
 }
 
+export type SeedanceReferenceOrderItem = {
+  type: 'node' | 'asset';
+  id: string;
+};
+
+export type SeedreamReferenceOrderItem = {
+  type: 'node';
+  id: string;
+};
+
 export interface NodeData {
   id: string;
   type: NodeType;
@@ -29,6 +39,7 @@ export interface NodeData {
   prompt: string;
   status: NodeStatus;
   resultUrl?: string; // Image URL or Video URL
+  tosPublicUrl?: string; // Public TOS URL for generated videos used as Seedance video reference
   lastFrame?: string; // For Video nodes: base64/url of the last frame to use as input for next node
   parentIds?: string[]; // For connecting lines (supports multiple inputs)
   groupId?: string; // ID of the group this node belongs to
@@ -45,6 +56,9 @@ export interface NodeData {
   videoDuration?: number; // Video duration in seconds (e.g., 5, 6, 8, 10)
   generateAudio?: boolean; // Whether to generate native audio (Kling 2.6, Veo 3.1)
   inputUrl?: string; // Input URL for video generation (image-to-video)
+  seedanceReferenceAssetId?: string; // Optional asset library reference ID for Seedance
+  seedanceReferenceOrder?: SeedanceReferenceOrderItem[]; // Ordered Seedance reference inputs
+  seedreamReferenceOrder?: SeedreamReferenceOrderItem[]; // Ordered Seedream reference inputs
 
   // Video Editor specific
   trimStart?: number; // Trim start time in seconds

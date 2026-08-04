@@ -41,6 +41,7 @@ import { WorkflowPanel } from './components/WorkflowPanel';
 import { HistoryPanel } from './components/HistoryPanel';
 import { ChatPanel, ChatBubble } from './components/ChatPanel';
 import { ImageEditorModal } from './components/modals/ImageEditorModal';
+import { SeedreamDrawStudioModal } from './components/modals/SeedreamDrawStudioModal';
 import { VideoEditorModal } from './components/modals/VideoEditorModal';
 import { ExpandedMediaModal } from './components/modals/ExpandedMediaModal';
 import { CreateAssetModal } from './components/modals/CreateAssetModal';
@@ -115,6 +116,14 @@ export default function App() {
   } = usePanelState();
 
   const [canvasHoveredNodeId, setCanvasHoveredNodeId] = useState<string | null>(null);
+  const [seedreamEditorModal, setSeedreamEditorModal] = useState<{
+    isOpen: boolean;
+    nodeId: string | null;
+    imageUrl?: string;
+  }>({
+    isOpen: false,
+    nodeId: null
+  });
 
 
   // Canvas title state (via hook)
@@ -183,7 +192,6 @@ export default function App() {
   const {
     selectionBox,
     isSelecting,
-    startSelection,
     updateSelection,
     endSelection,
     clearSelectionBox
@@ -333,6 +341,99 @@ export default function App() {
     }
   }, [nodes, handleOpenVideoEditor, handleOpenImageEditor]);
 
+  const handleOpenSeedreamEditor = React.useCallback((nodeId: string) => {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    let imageUrl = node.resultUrl;
+    if (!imageUrl && node.parentIds?.length) {
+      const parent = nodes.find(n => n.id === node.parentIds![0]);
+      imageUrl = parent?.type === NodeType.VIDEO && parent.lastFrame
+        ? parent.lastFrame
+        : parent?.resultUrl;
+    }
+
+    setSeedreamEditorModal({
+      isOpen: true,
+      nodeId,
+      imageUrl
+    });
+    setSelectedNodeIds([nodeId]);
+  }, [nodes]);
+
+  const handleCloseSeedreamEditor = React.useCallback(() => {
+    setSeedreamEditorModal({
+      isOpen: false,
+      nodeId: null
+    });
+  }, []);
+
+  const handleSeedreamEditorGenerationStarted = React.useCallback((payload: {
+    sourceNodeId: string;
+    prompt: string;
+    aspectRatio: string;
+    resolution: string;
+  }) => {
+    const sourceNode = nodes.find(n => n.id === payload.sourceNodeId);
+    if (!sourceNode) {
+      throw new Error('Source node not found');
+    }
+
+    const outputNodeId = crypto.randomUUID();
+    const newNode: NodeData = {
+      id: outputNodeId,
+      type: NodeType.IMAGE,
+      x: sourceNode.x + 360,
+      y: sourceNode.y,
+      prompt: payload.prompt,
+      status: NodeStatus.LOADING,
+      parentIds: [payload.sourceNodeId],
+      model: 'Seedream 5.0 Pro',
+      imageModel: 'seedream-5.0-pro',
+      aspectRatio: payload.aspectRatio,
+      resolution: payload.resolution,
+      generationStartTime: Date.now(),
+      errorMessage: undefined
+    };
+
+    setNodes(prev => [...prev, newNode]);
+    setSelectedNodeIds([newNode.id]);
+    return outputNodeId;
+  }, [nodes, setNodes, setSelectedNodeIds]);
+
+  const handleSeedreamEditorGenerationCompleted = React.useCallback((payload: {
+    outputNodeId: string;
+    sourceNodeId: string;
+    resultUrl: string;
+    prompt: string;
+    aspectRatio: string;
+    resolution: string;
+  }) => {
+    setNodes(prev => prev.map(node => node.id === payload.outputNodeId
+      ? {
+          ...node,
+          status: NodeStatus.SUCCESS,
+          resultUrl: `${payload.resultUrl}?t=${Date.now()}`,
+          errorMessage: undefined
+        }
+      : node
+    ));
+  }, [nodes, setNodes, setSelectedNodeIds]);
+
+  const handleSeedreamEditorGenerationFailed = React.useCallback((payload: {
+    outputNodeId: string;
+    errorMessage: string;
+  }) => {
+    setNodes(prev => prev.map(node => node.id === payload.outputNodeId
+      ? {
+          ...node,
+          status: NodeStatus.ERROR,
+          errorMessage: payload.errorMessage
+        }
+      : node
+    ));
+  }, [setNodes]);
+
   // Text node handlers
   const {
     handleWriteContent,
@@ -354,6 +455,8 @@ export default function App() {
     nodeToSnapshot,
     handleOpenCreateAsset,
     handleSaveAssetToLibrary,
+    handleAddToExistingAsset,
+    fetchLibraryAssets,
     handleContextUpload
   } = useAssetHandlers({ nodes, viewport, contextMenu, setNodes });
 
@@ -840,9 +943,9 @@ export default function App() {
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if ((e.target as HTMLElement).id === 'canvas-background') {
-      // Left-click (button 0): Start selection box
+      // Left-click (button 0): Start panning the canvas
       if (e.button === 0) {
-        startSelection(e);
+        startPanning(e);
         clearSelection();
         setSelectedConnection(null);
         setContextMenu(prev => ({ ...prev, isOpen: false }));
@@ -972,6 +1075,8 @@ export default function App() {
         onClose={() => setIsCreateAssetModalOpen(false)}
         nodeToSnapshot={nodeToSnapshot}
         onSave={handleSaveAssetToLibrary}
+        onAddToExisting={handleAddToExistingAsset}
+        fetchAssets={fetchLibraryAssets}
       />
 
       {/* TikTok Import Modal */}
@@ -1121,6 +1226,8 @@ export default function App() {
                     .map(parent => ({
                       id: parent!.id,
                       url: (parent!.type === NodeType.VIDEO ? parent!.lastFrame : parent!.resultUrl) || parent!.resultUrl!,
+                      resultUrl: parent!.resultUrl!,
+                      tosPublicUrl: parent!.tosPublicUrl,
                       type: parent!.type
                     }));
                 })()}
@@ -1160,6 +1267,7 @@ export default function App() {
                 onImageToImage={handleImageToImage}
                 onImageToVideo={handleImageToVideo}
                 onChangeAngleGenerate={handleChangeAngleGenerate}
+                onOpenSeedreamEditor={handleOpenSeedreamEditor}
                 zoom={viewport.zoom}
                 onMouseEnter={() => setCanvasHoveredNodeId(node.id)}
                 onMouseLeave={() => setCanvasHoveredNodeId(null)}
@@ -1299,7 +1407,7 @@ export default function App() {
         nodeId={editorModal.nodeId || ''}
         imageUrl={editorModal.imageUrl}
         initialPrompt={nodes.find(n => n.id === editorModal.nodeId)?.prompt}
-        initialModel={nodes.find(n => n.id === editorModal.nodeId)?.imageModel || 'gemini-pro'}
+        initialModel={nodes.find(n => n.id === editorModal.nodeId)?.imageModel || 'seedream-5.0-pro'}
         initialAspectRatio={nodes.find(n => n.id === editorModal.nodeId)?.aspectRatio || 'Auto'}
         initialResolution={nodes.find(n => n.id === editorModal.nodeId)?.resolution || '1K'}
         initialElements={nodes.find(n => n.id === editorModal.nodeId)?.editorElements as any}
@@ -1314,7 +1422,7 @@ export default function App() {
           if (!sourceNode) return;
 
           // Get settings from source node (which were updated by the modal)
-          const imageModel = sourceNode.imageModel || 'gemini-pro';
+          const imageModel = sourceNode.imageModel || 'seedream-5.0-pro';
           const aspectRatio = sourceNode.aspectRatio || 'Auto';
           const resolution = sourceNode.resolution || '1K';
 
@@ -1370,6 +1478,19 @@ export default function App() {
           });
         }}
         onUpdate={updateNode}
+      />
+
+      <SeedreamDrawStudioModal
+        isOpen={seedreamEditorModal.isOpen}
+        sourceNodeId={seedreamEditorModal.nodeId}
+        sourceImageUrl={seedreamEditorModal.imageUrl}
+        initialPrompt={nodes.find(n => n.id === seedreamEditorModal.nodeId)?.prompt}
+        initialAspectRatio={nodes.find(n => n.id === seedreamEditorModal.nodeId)?.aspectRatio || '1:1'}
+        initialResolution={nodes.find(n => n.id === seedreamEditorModal.nodeId)?.resolution || '1K'}
+        onClose={handleCloseSeedreamEditor}
+        onGenerationStarted={handleSeedreamEditorGenerationStarted}
+        onGenerationCompleted={handleSeedreamEditorGenerationCompleted}
+        onGenerationFailed={handleSeedreamEditorGenerationFailed}
       />
 
       {/* Storyboard Video Generation Modal */}

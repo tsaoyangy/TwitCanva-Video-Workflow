@@ -16,7 +16,7 @@ import { StoryInput } from '../StoryInput';
 
 const IMAGE_MODELS = [
     { id: 'gpt-image-1.5', name: 'GPT Image 1.5', provider: 'openai' },
-    { id: 'gemini-pro', name: 'Nano Banana Pro', provider: 'google' },
+    { id: 'seedream-5.0-pro', name: 'Seedream 5.0 Pro', provider: 'volcengine' },
     { id: 'kling-v1-5', name: 'Kling V1.5', provider: 'kling' },
     { id: 'kling-v2-1', name: 'Kling V2.1', provider: 'kling' },
 ];
@@ -707,7 +707,7 @@ export const StoryboardGeneratorModal: React.FC<StoryboardGeneratorModalProps> =
                                     <div className="text-center">
                                         <Loader2 size={48} className="animate-spin text-purple-500 mx-auto mb-4" />
                                         <p className="text-white font-medium">Generating Preview...</p>
-                                        <p className="text-neutral-400 text-sm mt-2">Creating a cohesive storyboard with Nano Banana Pro</p>
+                                        <p className="text-neutral-400 text-sm mt-2">Creating a cohesive storyboard with Seedream 5.0 Pro</p>
                                     </div>
                                 ) : state.compositeImageUrl ? (
                                     <div className="relative w-full h-full flex items-center justify-center">
@@ -761,7 +761,7 @@ export const StoryboardGeneratorModal: React.FC<StoryboardGeneratorModalProps> =
                                     <div className="text-neutral-400">Scenes:</div>
                                     <div className="text-white">{state.scripts.length}</div>
                                     <div className="text-neutral-400">Model:</div>
-                                    <div className="text-white">Nano Banana Pro</div>
+                                    <div className="text-white">Seedream 5.0 Pro</div>
                                     <div className="text-neutral-400">Preview:</div>
                                     <div className="text-white">{state.compositeImageUrl ? 'Generated' : 'Not available'}</div>
                                 </div>

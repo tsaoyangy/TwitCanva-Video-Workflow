@@ -20,6 +20,12 @@ export const useCanvasTitle = (initialTitle: string = 'Untitled') => {
         }
     }, [isEditingTitle]);
 
+    useEffect(() => {
+        if (!isEditingTitle) {
+            setEditingTitleValue(canvasTitle);
+        }
+    }, [canvasTitle, isEditingTitle]);
+
     return {
         canvasTitle,
         setCanvasTitle,

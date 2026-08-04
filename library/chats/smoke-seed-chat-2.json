@@ -1,0 +1,18 @@
+{
+  "id": "smoke-seed-chat-2",
+  "topic": "New TwitCanva Server",
+  "createdAt": "2026-07-20T10:54:18.102Z",
+  "updatedAt": "2026-07-20T10:59:12.361Z",
+  "messages": [
+    {
+      "role": "user",
+      "content": "hi with new server",
+      "timestamp": "2026-07-20T10:59:12.364Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Hi there! 🎉 So excited to have you here on the brand new TwitCanva server! The upgraded setup means faster generation speeds, more consistent high-quality outputs, and smoother canvas editing for all your creative image and video projects.\n\nWhether you want to brainstorm a wild concept, build the perfect generation prompt, get feedback on work you’ve already made, or test out the new server performance right away, I’m here to help!\n\nIf you want to kick things off with a fun, vibrant test generation to see the new server in action, here’s a ready-to-use prompt:\n```json\n{\n  \"prompt\": \"A whimsical tiny cloud cafe floating high above a rolling summer wildflower meadow, a fluffy orange tabby cat in a linen barista apron serving iced lavender lattes to tiny winged sparrow customers, puffy cloud table tops, warm fairy string lights strung between wispy cloud pillars, fireflies dancing nearby\",\n  \"subject\": \"Floating cloud cat cafe\",\n  \"style\": \"cozy storybook digital illustration, soft painterly texture\",\n  \"lighting\": \"warm golden hour sunset glow, soft diffused sky light, gentle twinkles from string lights\",\n  \"camera\": \"medium wide shot, slightly elevated perspective looking down at the meadow below\",\n  \"mood\": \"whimsical, cozy, joyful, dreamy\",\n  \"colors\": \"soft lavender, butter gold, sky blue, cream, mint green, tangerine orange\",\n  \"quality\": \"8k, highly detailed, crisp focus, rich warm textures, masterpiece\",\n  \"negative\": \"blurry, distorted figures, harsh shadows, dark gloomy tones, modern buildings, clutter\"\n}\n```\n\nJust let me know what you’re excited to create today—whether it’s a social media graphic, fantasy art, product mockup, retro poster, animated short clip, or something totally out of the box, we can make it happen! 😊",
+      "timestamp": "2026-07-20T10:59:12.364Z"
+    }
+  ]
+}

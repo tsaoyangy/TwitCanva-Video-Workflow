@@ -9,6 +9,14 @@
 import React, { useState, useCallback } from 'react';
 import { NodeData, NodeType, NodeStatus, Viewport, ContextMenuState } from '../types';
 
+interface LibraryAsset {
+    id: string;
+    name: string;
+    category: string;
+    url: string;
+    type: 'image' | 'video';
+}
+
 interface UseAssetHandlersOptions {
     nodes: NodeData[];
     viewport: Viewport;
@@ -28,6 +36,28 @@ export const useAssetHandlers = ({
 
     const [isCreateAssetModalOpen, setIsCreateAssetModalOpen] = useState(false);
     const [nodeToSnapshot, setNodeToSnapshot] = useState<NodeData | null>(null);
+
+    const normalizeSourceUrl = useCallback((sourceUrl: string) => {
+        if (!sourceUrl) return sourceUrl;
+        if (sourceUrl.startsWith('data:')) return sourceUrl;
+
+        try {
+            const parsedUrl = new URL(sourceUrl, window.location.origin);
+            return `${parsedUrl.pathname}${parsedUrl.search}`;
+        } catch {
+            return sourceUrl;
+        }
+    }, []);
+
+    const readErrorMessage = useCallback(async (response: Response) => {
+        try {
+            const payload = await response.json();
+            if (payload?.error) return payload.error;
+            return JSON.stringify(payload);
+        } catch {
+            return await response.text();
+        }
+    }, []);
 
     // ============================================================================
     // HANDLERS
@@ -175,23 +205,71 @@ export const useAssetHandlers = ({
     const handleSaveAssetToLibrary = useCallback(async (name: string, category: string) => {
         if (!nodeToSnapshot?.resultUrl) return;
 
+        const trimmedName = name.trim();
+        const trimmedCategory = category.trim();
+        if (!trimmedName || !trimmedCategory) {
+            throw new Error('Asset name and category are required.');
+        }
+
         try {
-            const response = await fetch('http://localhost:3001/api/library', {
+            const response = await fetch('/api/library', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    sourceUrl: nodeToSnapshot.resultUrl,
-                    name: name,
-                    category: category
+                    sourceUrl: normalizeSourceUrl(nodeToSnapshot.resultUrl),
+                    name: trimmedName,
+                    category: trimmedCategory
                 })
             });
 
-            if (!response.ok) throw new Error('Failed to save');
+            if (!response.ok) {
+                const errorMessage = await readErrorMessage(response);
+                throw new Error(errorMessage || 'Failed to save');
+            }
         } catch (error) {
             console.error("Failed to save asset:", error);
             throw error;
         }
-    }, [nodeToSnapshot]);
+    }, [nodeToSnapshot, normalizeSourceUrl, readErrorMessage]);
+
+    const handleAddToExistingAsset = useCallback(async (assetId: string) => {
+        if (!nodeToSnapshot?.resultUrl) return;
+        if (!assetId) {
+            throw new Error('Please select an existing asset.');
+        }
+
+        try {
+            const response = await fetch(`/api/library/${assetId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sourceUrl: normalizeSourceUrl(nodeToSnapshot.resultUrl)
+                })
+            });
+
+            if (!response.ok) {
+                const errorMessage = await readErrorMessage(response);
+                throw new Error(errorMessage || 'Failed to update asset');
+            }
+        } catch (error) {
+            console.error("Failed to update asset:", error);
+            throw error;
+        }
+    }, [nodeToSnapshot, normalizeSourceUrl, readErrorMessage]);
+
+    const fetchLibraryAssets = useCallback(async (): Promise<LibraryAsset[]> => {
+        try {
+            const response = await fetch('/api/library');
+            if (!response.ok) {
+                const errorMessage = await readErrorMessage(response);
+                throw new Error(errorMessage || 'Failed to load library');
+            }
+            return await response.json();
+        } catch (error) {
+            console.error("Failed to load assets:", error);
+            throw error;
+        }
+    }, [readErrorMessage]);
 
     /**
      * Handle file upload from context menu
@@ -309,6 +387,8 @@ export const useAssetHandlers = ({
         handleLibrarySelect,
         handleOpenCreateAsset,
         handleSaveAssetToLibrary,
+        handleAddToExistingAsset,
+        fetchLibraryAssets,
         handleContextUpload
     };
 };

@@ -1,0 +1,13 @@
+{
+  "id": "seedance-image-video-api-smoke",
+  "filename": "vid_1784639086238_z49wbqgtw.mp4",
+  "prompt": "参考图片作为主体和画面风格参考，参考视频作为运动节奏和镜头运动参考，生成一段自然流畅的短视频。",
+  "model": "seedance-2.0",
+  "aspectRatio": "9:16",
+  "resolution": "720p",
+  "createdAt": "2026-07-21T13:04:47.043Z",
+  "type": "videos",
+  "tosBucket": "arkclaw--tsaoyang",
+  "tosKey": "twitcanva/video/vid_1784639086238_z49wbqgtw.mp4",
+  "tosPublicUrl": "https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com/twitcanva/video/vid_1784639086238_z49wbqgtw.mp4"
+}

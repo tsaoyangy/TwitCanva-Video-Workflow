@@ -1,0 +1,18 @@
+{
+  "id": "chat-1784626344716-b332njkt3",
+  "topic": "New Chat",
+  "createdAt": "2026-07-21T09:32:24.735Z",
+  "updatedAt": "2026-07-21T09:32:45.359Z",
+  "messages": [
+    {
+      "role": "user",
+      "content": "hi",
+      "timestamp": "2026-07-21T09:32:45.360Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Hi there! 👋 I'm your creative assistant for TwitCanva, here to help you make stunning images and videos for any project you have in mind.\n\nWhether you're:\n✅ Brainstorming ideas for social media graphics, wall art, marketing visuals, short-form videos, or just fun personal art\n✅ Crafting perfectly tuned AI generation prompts to get exactly the look you want\n✅ Looking for feedback on composition, lighting, color palettes, or storytelling for visuals you've already made\n✅ Hunting for creative inspiration or pro tips to make your work stand out\n\nI've got you! What are you looking to create today? For example, if you want a cozy fall café illustration, a sleek cinematic product shot, a playful birthday invite graphic, or even a dreamy fantasy landscape, just say the word.",
+      "timestamp": "2026-07-21T09:32:45.360Z"
+    }
+  ]
+}
