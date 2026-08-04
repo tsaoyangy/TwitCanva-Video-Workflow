@@ -228,18 +228,6 @@ library/chats/       # Chat 会话
 library/workflows/   # 保存的工作流
 ```
 
-## Git 与密钥
-
-当前仓库可以提交代码和 `library/` 中的本地素材，但不要提交真实密钥。
-
-必须保持忽略：
-
-```text
-.env
-```
-
-不要把 Ark API Key、TOS AK/SK 或其他私密凭证写入代码或 README。
-
 ## 常见问题
 
 `ARK_API_KEY not configured`
