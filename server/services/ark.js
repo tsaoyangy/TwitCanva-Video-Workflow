@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 
 export const ARK_BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3';
-export const DEFAULT_SEED_MODEL = 'doubao-seed-2-1-pro-260628';
+export const DEFAULT_SEED_MODEL = 'doubao-seed-evolving';
 export const DEFAULT_SEEDREAM_MODEL = 'doubao-seedream-5-0-pro-260628';
 
 export function getArkClient(apiKey) {

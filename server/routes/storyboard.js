@@ -2,7 +2,7 @@
  * storyboard.js
  * 
  * Routes for AI storyboard script generation.
- * Uses Seed 2.1 for storyboard text generation and Seedream 5.0 Pro for composite images.
+ * Uses Seed Evolving for storyboard text generation and Seedream 5.0 Pro for composite images.
  */
 
 import express from 'express';
@@ -81,7 +81,7 @@ async function retryOperation(operation, maxRetries = 3, initialDelayMs = 2000) 
 // ============================================================================
 
 /**
- * Generate storyboard scripts using Seed 2.1
+ * Generate storyboard scripts using Seed Evolving
  * 
  * POST /api/storyboard/generate-scripts
  * Body: { story, characterDescriptions, sceneCount }
@@ -290,7 +290,7 @@ Respond ONLY with valid JSON, no other text.`;
             }
         }
 
-        // Call Seed 2.1 with RETRY logic
+        // Call Seed Evolving with RETRY logic
         const responseText = await retryOperation(() => generateSeedText({
             apiKey: ARK_API_KEY,
             promptParts,
@@ -340,7 +340,7 @@ Respond ONLY with valid JSON, no other text.`;
 // ============================================================================
 
 /**
- * Brainstorm a story using Seed 2.1 based on selected characters
+ * Brainstorm a story using Seed Evolving based on selected characters
  * 
  * POST /api/storyboard/brainstorm-story
  * Body: { characterDescriptions, genre? }
@@ -425,7 +425,7 @@ Respond with ONLY the story synopsis, no additional text or formatting.`;
             }
         }
 
-        // Call Seed 2.1 with RETRY
+        // Call Seed Evolving with RETRY
         const story = (await retryOperation(() => generateSeedText({
             apiKey: ARK_API_KEY,
             promptParts,

@@ -1,6 +1,6 @@
 # TwitCanva Video Workflow
 
-这是一个基于节点画布的 AI 图片与视频生成工作流应用。当前版本已经按本项目的实际调用链路改造为火山引擎 Ark 工作流，主要使用 Seed 2.1、Seedream 5.0 Pro、Seedance 2.0 和火山引擎 TOS。
+这是一个基于节点画布的 AI 图片与视频生成工作流应用。当前版本已经按本项目的实际调用链路改造为火山引擎 Ark 工作流，主要使用 Seed Evolving、Seedream 5.0 Pro、Seedance 2.0 和火山引擎 TOS。
 
 当前应用使用火山引擎 Ark 北京区域接口完成对话、图片生成、故事板文本生成和视频生成。Seedance 生成的视频会保存到本地；配置 TOS 后，视频也会上传到上海区域 TOS，并记录公开 URL，后续作为 Seedance 视频参考输入时优先使用这个公网 URL。
 
@@ -8,8 +8,8 @@
 
 | 能力 | 当前模型 / 服务 | 后端入口 |
 | --- | --- | --- |
-| 右侧对话与多模态理解 | Seed 2.1 / Seed Evolving | `POST /api/chat` |
-| Storyboard 文本生成 | Seed 2.1 / Seed Evolving | `server/routes/storyboard.js` |
+| 右侧对话与多模态理解 | Seed Evolving，`doubao-seed-evolving` | `POST /api/chat` |
+| Storyboard 文本生成 | Seed Evolving，`doubao-seed-evolving` | `server/routes/storyboard.js` |
 | 文生图 | Seedream 5.0 Pro | `POST /api/generate-image` |
 | 单图 / 多图参考生图 | Seedream 5.0 Pro | `POST /api/generate-image` |
 | 交互式图片编辑 | Seedream 5.0 Pro，支持标记编辑和坐标编辑 | `POST /api/seedream-edit` |
@@ -25,7 +25,7 @@ https://ark.cn-beijing.volces.com/api/v3
 ## 主要功能
 
 - 节点式画布，支持图片和视频工作流编排。
-- 右侧 Chat 使用 Seed 2.1，并支持拖入画布中的图片 / 视频素材作为上下文。
+- 右侧 Chat 使用 Seed Evolving，并支持拖入画布中的图片 / 视频素材作为上下文。
 - Seedream 5.0 Pro 支持文生图、单图参考生图、多图参考生图。
 - Seedream 交互式编辑支持标记模式和坐标模式。
 - Seedream 编辑生成时会立即创建一个新的 loading 图片节点，原图节点会保留。
@@ -34,7 +34,7 @@ https://ark.cn-beijing.volces.com/api/v3
 - Seedance 支持手动输入火山 Ark 素材库 asset ID。
 - Seedance 时长支持 `Auto`、`5`、`6`、`8`、`10`、`12`、`15` 秒。
 - 本地生成视频可上传到 TOS，后续作为视频参考时使用公网 URL。
-- Storyboard Generator 已改为 Seed 2.1 生成文本，Seedream 5.0 Pro 生成合成图。
+- Storyboard Generator 已改为 Seed Evolving 生成文本，Seedream 5.0 Pro 生成合成图。
 - 本地素材、聊天和工作流数据保存在 `library/` 目录。
 
 ## 项目结构
@@ -61,7 +61,7 @@ https://ark.cn-beijing.volces.com/api/v3
 
 - 推荐 Node.js 20+。
 - npm。
-- 火山引擎 Ark API Key，需要具备 Seed 2.1、Seedream 5.0 Pro、Seedance 2.0 系列模型调用权限。
+- 火山引擎 Ark API Key，需要具备 Seed Evolving、Seedream 5.0 Pro、Seedance 2.0 系列模型调用权限。
 - 可选但推荐：火山引擎 TOS AK/SK，用于把本地生成视频上传为公网 URL，方便后续作为 Seedance 视频参考输入。
 
 ## 环境变量
