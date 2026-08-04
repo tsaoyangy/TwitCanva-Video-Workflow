@@ -228,14 +228,6 @@ library/chats/       # Chat 会话
 library/workflows/   # 保存的工作流
 ```
 
-视频元数据中可能包含：
-
-```json
-{
-  "tosPublicUrl": "https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com/twitcanva/video/..."
-}
-```
-
 ## Git 与密钥
 
 当前仓库可以提交代码和 `library/` 中的本地素材，但不要提交真实密钥。
