@@ -75,11 +75,11 @@ ARK_API_KEY=your_ark_api_key
 # 可选但推荐：用于 Seedance 视频参考复用
 TOS_ACCESS_KEY_ID=your_tos_access_key_id
 TOS_SECRET_ACCESS_KEY=your_tos_secret_access_key
-TOS_REGION=cn-shanghai
-TOS_ENDPOINT=tos-cn-shanghai.volces.com
-TOS_BUCKET=arkclaw--tsaoyang
-TOS_VIDEO_PREFIX=twitcanva/video
-TOS_PUBLIC_BASE_URL=https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com
+TOS_REGION=
+TOS_ENDPOINT=
+TOS_BUCKET=
+TOS_VIDEO_PREFIX=
+TOS_PUBLIC_BASE_URL=
 ```
 
 说明：
