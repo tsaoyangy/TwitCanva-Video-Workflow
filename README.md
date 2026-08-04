@@ -1,511 +1,277 @@
-<div align="center">
-  <img src="public/TwitCanva-logo.png" alt="TwitCanva Logo" width="120" />
-  <h1>TwitCanva</h1>
-</div>
+# TwitCanva Video Workflow
 
-A modern, AI-powered canvas application for generating and manipulating images and videos using OpenAI GPT Image, Google Gemini, Kling AI, Hailuo AI (MiniMax), and Fal.ai. Built with React, TypeScript, and Vite.
+Node-based AI image and video workflow canvas, modified for the current Volcengine Ark workflow.
 
-![TwitCanva](https://img.shields.io/badge/React-18.3.1-blue)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.6.2-blue)
-![Vite](https://img.shields.io/badge/Vite-6.4.1-purple)
-![License](https://img.shields.io/badge/license-Apache--2.0-blue)
+This version uses Volcengine Ark in the Beijing region for chat, image generation, storyboard generation, and video generation. Generated local videos can be uploaded to Volcengine TOS in the Shanghai region so they can be reused as public video references in later Seedance calls.
 
-## Star History
+## Current Effective Model Calls
 
-[![Star History Chart](https://api.star-history.com/svg?repos=SankaiAI/TwitCanva-Video-Workflow&type=date&legend=top-left)](https://www.star-history.com/?repos=SankaiAI%2FTwitCanva-Video-Workflow&type=date&legend=top-left)
+| Capability | Current model/service | Backend entry |
+| --- | --- | --- |
+| Chat and multimodal understanding | Seed 2.1 / Seed Evolving, `doubao-seed-2-1-pro-260628` | `POST /api/chat` |
+| Storyboard text generation | Seed 2.1 / Seed Evolving, `doubao-seed-2-1-pro-260628` | `server/routes/storyboard.js` |
+| Image generation | Seedream 5.0 Pro, `doubao-seedream-5-0-pro-260628` | `POST /api/generate-image` |
+| Image-to-image and multi-image reference generation | Seedream 5.0 Pro | `POST /api/generate-image` |
+| Interactive image editing | Seedream 5.0 Pro with mark/coordinate editing | `POST /api/seedream-edit` |
+| Video generation | Seedance 2.0 / Fast / Mini | `POST /api/generate-video` |
+| Video reference URL resolving | Volcengine TOS upload and public URL metadata | `GET /api/videos/tos-url` |
 
+Ark API base URL:
 
-## ✨ Features
-
-- **🎨 Visual Canvas Interface** - Drag-and-drop node-based workflow
-- **🤖 Multi-Model AI Generation** - GPT Image 1.5, Gemini Pro, Kling V1-V2.5 for images
-- **🎬 Multi-Model Video Generation** - Veo 3.1, Kling V1-V2.6, Hailuo 2.3/O2 for videos
-- **🎥 Camera Angle Control** - Transform any image by adjusting camera rotation and tilt angles (Qwen-Image-Edit)
-- **📋 Storyboard** - Create video storyboards with consistent characters and layouts
-- **💃 Motion Control** - Transfer motion from reference videos to character images (Kling V2.6 via Fal.ai)
-- **📥 TikTok Import** - Download TikTok videos without watermark for use as motion references
-- **📤 Post to X** - Share generated images/videos directly to Twitter/X with one click
-- **📤 Post to TikTok** - Share generated videos directly to TikTok with one click
-- **🖼️ Image-to-Image** - Use reference images for generation
-- **📽️ Frame-to-Frame Video** - Animate between start and end frames
-- **🔗 Smart Node Connections** - Type-aware validation (IMAGE→VIDEO, TEXT→IMAGE, etc.)
-- **💬 AI Chat Assistant** - Built-in chat with LangGraph agent
-- **📚 Asset Library** - Save and reuse generated assets
-- **💾 Workflow Management** - Save, load, and share workflows
-- **⚡ Real-time Updates** - Hot module replacement for instant feedback
-- **🎯 Aspect Ratio Control** - Multiple preset ratios for images
-- **📹 Resolution Options** - 720p and 1080p for videos
-- **🔒 Secure API** - Backend proxy keeps API keys safe
-- **🔄 Auto-Model Selection** - Filters models based on input compatibility
-- **🖥️ Local Open-Source Models** - Run Stable Diffusion, ControlNet, Qwen on your GPU
-- **⚖️ Commercial Friendly** - Dual-licensed or permissive terms for commercial growth
-
-
-## 🎥 Showcase
-
-### App Overview
-https://github.com/user-attachments/assets/7a64d4df-7ade-4bfa-b2cd-d615d267dd40
-
-### Motion Control Example (Kling V2.6)
-Transfer motion from a reference video to a character image - make anyone dance!
-
-https://github.com/user-attachments/assets/1ee6cbf3-00a5-496e-852c-3304c6ebc6c9
-
-### Output Example
-Download all the generated videos and use video editting tool like CapCut to create a final video. Check result below.
-
-https://github.com/user-attachments/assets/43cf8bb8-bf85-45f9-96da-657033126d94
-
-https://github.com/user-attachments/assets/e6f89da5-d3a6-4889-a38b-672cf37bbd79
-
-### Camera Angle Control
-Transform any image by adjusting camera rotation and tilt angles.
-
-https://github.com/user-attachments/assets/f0d678df-31ac-4431-bd7c-eea3950bfb1d
-
-### Storyboard
-Create video storyboards with consistent characters and layouts.
-
-https://github.com/user-attachments/assets/3c36de54-d37e-4875-8403-5b6e4a6216e0
-
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18+ 
-- npm or yarn
-- Google Gemini API key (get one at [Google AI Studio](https://aistudio.google.com/app/apikey))
-- Kling AI API keys (get them at [Kling AI Developer](https://app.klingai.com/global/dev/api-key))
-  - Requires purchasing API packages at [Kling AI Pricing](https://klingai.com/global/dev/pricing)
-- Hailuo AI API key (get one at [MiniMax Platform](https://platform.minimax.io/user-center/basic-information/interface-key))
-- OpenAI API key (get one at [OpenAI Platform](https://platform.openai.com/api-keys))
-  - Requires [organization verification](https://platform.openai.com/settings/organization/general) to use GPT Image models
-- Fal.ai API key (get one at [Fal.ai Dashboard](https://fal.ai/dashboard/keys)) - Required for Kling V2.6 Motion Control
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/SankaiAI/TwitCanva.git
-   cd TwitCanva
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   
-   Create a `.env` file in the root directory:
-   ```env
-   # Get from https://aistudio.google.com/app/apikey
-   GEMINI_API_KEY=your_gemini_api_key_here
-   
-   # Get from https://app.klingai.com/global/dev/api-key
-   KLING_ACCESS_KEY=your_kling_access_key_here
-   KLING_SECRET_KEY=your_kling_secret_key_here
-   
-   # Get from https://platform.minimax.io/user-center/basic-information/interface-key
-   HAILUO_API_KEY=your_hailuo_api_key_here
-   
-   # Get from https://platform.openai.com/api-keys
-   OPENAI_API_KEY=your_openai_api_key_here
-   
-   # Get from https://fal.ai/dashboard/keys (for Kling V2.6 Motion Control)
-   FAL_API_KEY=your_fal_api_key_here
-   
-   # Optional: X (Twitter) Post Feature - Get from https://developer.twitter.com/en/portal
-   # See docs/post-to-x.md for detailed setup instructions
-   TWITTER_CLIENT_ID=your_twitter_client_id
-   TWITTER_CLIENT_SECRET=your_twitter_client_secret
-   TWITTER_API_KEY=your_twitter_api_key
-   TWITTER_API_SECRET=your_twitter_api_secret
-   TWITTER_ACCESS_TOKEN=your_twitter_access_token
-   TWITTER_ACCESS_TOKEN_SECRET=your_twitter_access_token_secret
-   TWITTER_CALLBACK_URL=http://127.0.0.1:3001/api/twitter/callback
-   
-   # Optional: TikTok Post Feature - Get from https://developers.tiktok.com/
-   # See docs/tiktok-integration.md for detailed setup instructions
-   TIKTOK_CLIENT_KEY=your_tiktok_client_key
-   TIKTOK_CLIENT_SECRET=your_tiktok_client_secret
-   TIKTOK_CALLBACK_URL=https://your-ngrok-url.ngrok-free.app/api/tiktok-post/callback
-   ```
-   
-   > ⚠️ **Security**: API keys are stored server-side only and never exposed to the client.
-
-4. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-   
-   This starts both:
-   - **Frontend dev server**: `http://localhost:5173`
-   - **Backend API server**: `http://localhost:3001`
-
-### Alternative: Docker Installation
-
-If you prefer using Docker to run the application in a containerized environment (recommended for deployment):
-
-1. **Clone the repository and set up .env** (same as steps 1-3 above)
-
-2. **Run with Docker Compose**
-   ```bash
-   docker compose up -d --build
-   ```
-
-   - The app will run on `http://localhost:3001`
-   - Data persists in the local `library/` folder
-   - To stop: `docker compose down`
-
-### Optional: Local Open-Source Models Setup
-
-TwitCanva supports running open-source AI models (like Stable Diffusion, Qwen Camera Control, ControlNet) locally on your GPU. This is **optional** - the cloud-based AI models work without this setup.
-
-**Requirements:**
-- NVIDIA GPU with 8GB+ VRAM (12GB+ recommended for larger models)
-- Python 3.10+
-- CUDA-compatible drivers
-
-**Setup:**
-```bash
-# Option 1: Use npm script (recommended)
-npm run setup:local-models
-
-# Option 2: Run setup script directly
-# Windows:
-setup-local-models.bat
-
-# Linux/macOS:
-chmod +x setup-local-models.sh
-./setup-local-models.sh
+```text
+https://ark.cn-beijing.volces.com/api/v3
 ```
 
-This will:
-1. Create a Python virtual environment (`venv/`)
-2. Install PyTorch with CUDA support (~2.8GB download)
-3. Create the `models/` directory structure
-4. Test GPU detection
+Current Seedance model mapping:
 
-**Adding Models:**
+| Frontend option | Ark model |
+| --- | --- |
+| `seedance-2.0` | `doubao-seedance-2-0-260128` |
+| `seedance-2.0-fast` | `doubao-seedance-2-0-fast-260128` |
+| `seedance-2.0-mini` | `doubao-seedance-2-0-mini-260615` |
 
-Download models from [HuggingFace](https://huggingface.co/models), [Civitai](https://civitai.com), or similar sites (`.safetensors`, `.ckpt`, or `.pt` files) and place them in the appropriate folder:
+## Main Features
 
-| Folder | Model Types | Examples |
-|--------|-------------|----------|
-| `models/checkpoints/` | Main image generation models | Stable Diffusion 1.5, SDXL, DreamShaper, Juggernaut XL, Flux |
-| `models/loras/` | LoRA adapters for styles/characters | Art styles, character LoRAs, detail enhancers |
-| `models/controlnet/` | Guided generation models | OpenPose, Canny, Depth, Tile |
-| `models/video/` | Video generation models | AnimateDiff, Stable Video Diffusion (SVD) |
+- Visual node canvas for image and video workflows.
+- Seed 2.1 chat assistant with local image/video attachment support.
+- Seedream 5.0 Pro text-to-image, single image-to-image, and multi-image reference generation.
+- Seedream interactive edit modal with mark mode and coordinate mode.
+- Seedance 2.0 text-to-video and reference-based video generation.
+- Seedance ordered reference list, including connected image/video nodes and manual Ark asset IDs.
+- Seedance duration options include `Auto`, `5`, `6`, `8`, `10`, `12`, and `15` seconds.
+- Video references are sent as public URLs when the source is a generated local video.
+- Generated Seedance videos are saved locally and uploaded to TOS when TOS credentials are configured.
+- Storyboard generator uses Seed 2.1 for text and Seedream 5.0 Pro for composite images.
+- Local workflow and asset persistence under `library/`.
 
-**Using Local Models:**
-1. Right-click on canvas → Add Nodes
-2. Select "Local Image Model" or "Local Video Model"
-3. Choose your downloaded model from the dropdown
-4. Enter a prompt and generate!
+## Project Structure
 
-> 📖 For detailed documentation, see [docs/local-model-support.md](docs/local-model-support.md)
-
-### Optional: Camera Angle Control Setup
-
-Transform your generated images with AI-powered camera angle manipulation using the Qwen Image Edit model.
-
-#### Option 1: Cloud Deployment (Recommended)
-For users without high-end GPUs, we provide a Modal-based cloud deployment.
-
-1. **Install Modal**:
-   ```bash
-   pip install modal
-   modal setup
-   ```
-
-2. **Deploy the App**:
-   ```bash
-   modal deploy modal/camera_angle.py
-   ```
-
-3. **Configure Environment**:
-   Copy the generated `generate` endpoint URL and add it to your `.env` file:
-   ```env
-   VITE_MODAL_CAMERA_ENDPOINT=https://your-workspace--camera-angle-control-cameraangle-generate.modal.run
-   ```
-
-4. **Managing Costs**:
-   - **Auto scale-down**: Containers automatically shut down after 5 minutes of inactivity (no charges when idle).
-   - **Stop the app completely**: Run `modal app stop camera-angle-control` to disable the endpoint entirely.
-   - **Restart after stopping**: Run `modal deploy modal/camera_angle.py` again to re-enable.
-   
-   > **Tip**: Stop the app when not actively using the feature to avoid any accidental charges.
-
-#### Option 2: Local Deployment (Advanced)
-This feature requires a **24GB VRAM GPU** (RTX 3090/4090).
-
-**Download Models (~35GB):**
-```bash
-# Activate venv
-.\venv\Scripts\activate    # Windows
-source venv/bin/activate   # Linux/macOS
-
-# Download fast transformer (~20GB)
-huggingface-cli download linoyts/Qwen-Image-Edit-Rapid-AIO \
-    --local-dir models/camera-control/qwen-rapid-aio \
-    --include "transformer/*"
-
-# Download camera angle LoRA (~236MB)
-huggingface-cli download dx8152/Qwen-Edit-2509-Multiple-angles \
-    镜头转换.safetensors \
-    --local-dir models/camera-control/loras
+```text
+.
+├── src/                         # React + TypeScript frontend
+│   ├── App.tsx                  # Canvas state and modal orchestration
+│   ├── components/              # Canvas, node controls, chat, modals
+│   ├── hooks/                   # Generation and panel state logic
+│   └── services/                # Frontend API clients
+├── server/                      # Express backend
+│   ├── index.js                 # App entry and shared routes
+│   ├── routes/                  # Generation and storyboard routes
+│   └── services/                # Ark, Seedance, TOS helpers
+├── library/                     # Local images, videos, assets, chats, workflows
+├── seedream-draw-studio-demo/   # Reference project only, not the runtime app
+├── start-dev.sh                 # Convenience local dev launcher
+├── Dockerfile
+└── docker-compose.yml
 ```
 
-**Configure HuggingFace Cache (Recommended):**
+## Requirements
 
-By default, HuggingFace caches models to your C: drive. Move the cache to prevent filling up your system drive:
+- Node.js 20+ recommended.
+- npm.
+- Volcengine Ark API key with access to Seed 2.1, Seedream 5.0 Pro, and Seedance 2.0 models.
+- Optional but recommended: Volcengine TOS AK/SK if you want generated local videos to be reused as Seedance video references.
 
-```powershell
-# Windows - Set cache to D: drive
-[System.Environment]::SetEnvironmentVariable("HF_HOME", "D:\HuggingFace_Cache", "User")
-# Restart terminal after running
+## Environment Variables
+
+Create a `.env` file in the project root.
+
+```env
+# Required for current Ark model calls
+ARK_API_KEY=your_ark_api_key
+
+# Optional but recommended for Seedance video reference reuse
+TOS_ACCESS_KEY_ID=your_tos_access_key_id
+TOS_SECRET_ACCESS_KEY=your_tos_secret_access_key
+TOS_REGION=cn-shanghai
+TOS_ENDPOINT=tos-cn-shanghai.volces.com
+TOS_BUCKET=arkclaw--tsaoyang
+TOS_VIDEO_PREFIX=twitcanva/video
+TOS_PUBLIC_BASE_URL=https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com
 ```
+
+Notes:
+
+- `.env` is intentionally ignored by Git.
+- Local generated assets in `library/` are part of this customized repository unless you choose to ignore them later.
+- Legacy environment variables for Gemini, Kling, Hailuo, OpenAI, Fal, X, or TikTok may still exist in old code paths, but the current primary workflow uses `ARK_API_KEY` and optional TOS variables.
+
+## Local Development
+
+Install dependencies:
 
 ```bash
-# Linux/macOS - Add to ~/.bashrc or ~/.zshrc
-export HF_HOME="/path/to/your/cache"
-source ~/.bashrc
+npm install
 ```
 
-**Start Camera Angle Server:**
-```bash
-.\start-camera-server.bat    # Windows
-./start-camera-server.sh     # Linux/macOS
-# Server runs on http://localhost:8100
-```
-
-> 📖 For detailed documentation, see [docs/camera-angle-control.md](docs/camera-angle-control.md)
-
-
-## 💾 Asset Storage
-
-All generated assets are automatically saved to local folders. **These folders are created automatically** when the server starts if they don't exist.
-
-### Storage Locations
-
-| Asset Type | Folder | File Format | Notes |
-|------------|--------|-------------|-------|
-| **Images** | `library/images/` | `.png` + `.json` | Auto-saved on generation |
-| **Videos** | `library/videos/` | `.mp4` + `.json` | Auto-saved on generation |
-| **Workflows** | `library/workflows/` | `.json` | Manual save via UI |
-| **Chat Sessions** | `library/chats/` | `.json` | Auto-saved per message |
-| **Assets** | `library/assets/` | Various | User uploaded files |
-
-### How It Works
-
-1. **On server startup**: Directories are created with `fs.mkdirSync(dir, { recursive: true })`
-2. **On generation**: Files are saved to disk and served via `/library/*` URLs
-3. **Metadata**: Each asset has a `.json` file with prompt, timestamp, and other info
-4. **Persistence**: Assets persist across server restarts
-
-
-> **Note**: The `library/` folder is in `.gitignore` and won't be committed to the repository.
-
-## 🎮 Usage
-
-### Creating Nodes
-
-1. **Double-click** on the canvas to open the context menu
-2. Select **"Add Nodes"** → Choose node type (Image/Video)
-3. Enter a prompt describing what you want to generate
-4. Click the **✨ Generate** button
-
-### Connecting Nodes
-
-1. **Hover** over a node to reveal connector buttons (+ icons)
-2. **Click and drag** from a connector to create a connection
-3. **Release** on another node to connect and chain generation
-
-### AI Chat
-
-1. Click the **Chat** button in the top bar
-2. Type your message or attach images from the canvas
-3. The AI assistant can help with prompts, ideas, and more
-
-### Saving Workflows
-
-1. Click the **Workflows** button in the top bar
-2. Enter a workflow name and click **Save**
-3. Load saved workflows anytime from the same panel
-
-### Canvas Navigation
-
-- **Pan**: Click and drag on empty canvas space
-- **Zoom**: `Ctrl/Cmd + Mouse Wheel` or use the zoom slider
-- **Select**: Click on a node to select it
-- **Multi-select**: `Shift + Click` or drag a selection box
-- **Context Menu**: Right-click for additional options
-
-### Tools
-
-Access import tools via the **Wrench** icon in the left toolbar.
-
-#### TikTok Video Import
-
-Download TikTok videos without watermark to use as **motion references** for the Motion Control feature:
-
-1. Click the **Wrench (Tools)** icon in the left toolbar
-2. Select **Import TikTok** from the dropdown menu
-3. Paste a TikTok video URL (tiktok.com, vm.tiktok.com, or vt.tiktok.com)
-4. Click **Import Video** to download
-5. Preview the video and click **Add to Canvas**
-
-> **Tip**: The imported video will appear in your Video History and can be used as a motion reference when generating videos with Kling V2.6 Motion Control. This allows you to transfer dance moves, gestures, or any motion from TikTok videos to your AI-generated characters!
-
-> **Note**: First and last frames are automatically trimmed to remove TikTok watermarks (requires ffmpeg installed on your system).
-
-#### Post to X (Twitter)
-
-Share your generated images and videos directly to Twitter/X:
-
-1. Generate an image or video using a node
-2. Hover over the media and click the **X icon** button
-3. Sign in with your X account (first time only)
-4. Add an optional caption
-5. Click **Post** to share!
-
-> **Rate Limits (Free Tier)**: 17 posts/day, 85 media uploads/day. See [Post to X Documentation](docs/post-to-x.md) for setup instructions.
-
-#### Post to TikTok
-
-Share your generated videos directly to TikTok:
-
-1. Generate a video using a node
-2. Hover over the video and click the **TikTok icon** button (🎵)
-3. Sign in with your TikTok account (first time only)
-4. Add a caption with hashtags
-5. Select privacy level ("Only Me" for testing)
-6. Click **Post to TikTok**
-
-> **Note**: Unaudited apps can only post to private accounts. See [TikTok Integration Documentation](docs/tiktok-integration.md) for full setup.
-
-## 🔧 Available Scripts
+Start frontend and backend together:
 
 ```bash
-npm run dev        # Start frontend + backend together
-npm run server     # Start backend server only (port 3001)
-npm run build      # Build for production
-npm run preview    # Preview production build
+./start-dev.sh
 ```
 
-## 🔒 Security
+Equivalent npm command:
 
-Your API key is **never exposed** to the browser:
-
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────┐
-│  Browser/Client │────▶│  Backend :3001  │────▶│  Gemini API │
-│  (No API key)   │     │  (.env file)    │     │             │
-└─────────────────┘     └─────────────────┘     └─────────────┘
+```bash
+npm run dev
 ```
 
-- ✅ API key stored in `.env` (server-side only)
-- ✅ `.env` file is in `.gitignore`
-- ✅ Backend proxies all API calls
-- ✅ No sensitive data in client code
+Default local URLs:
 
-## 📦 Tech Stack
+```text
+Frontend: http://localhost:5173
+Backend:  http://localhost:3001
+```
 
-### Frontend
-- **React 18** - UI library
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **Tailwind CSS** - Styling
-- **Lucide React** - Icons
+Build frontend:
 
-### Backend
-- **Express** - Web server
-- **LangGraph.js** - Chat agent framework
-- **@google/genai** - Gemini API client
-- **dotenv** - Environment variables
+```bash
+npm run build
+```
 
-### AI Models
+Run backend only:
 
-**Image Generation:**
-| Model | Provider | Image-to-Image | Multi-Image |
-|-------|----------|:-------------:|:-----------:|
-| GPT Image 1.5 | OpenAI | ✅ | ✅ |
-| Gemini Pro | Google | ✅ | ✅ |
-| Kling V1 | Kling AI | ✅ | ❌ |
-| Kling V1.5 | Kling AI | ✅ | ❌ |
-| Kling V2 New | Kling AI | ❌ | ❌ |
-| Kling V2.1 | Kling AI | ❌ | ✅ |
+```bash
+npm run server
+```
 
-**Video Generation:**
-| Model | Provider | Text-to-Video | Image-to-Video | Frame-to-Frame |
-|-------|----------|:-------------:|:--------------:|:--------------:|
-| Veo 3.1 | Google | ✅ | ✅ | ✅ |
-| Kling V1 | Kling AI | ✅ | ✅ | ❌ |
-| Kling V1.5 | Kling AI | ✅ | ✅ | ❌ |
-| Kling V1.6 | Kling AI | ✅ | ✅ | ✅ |
-| Kling V2 Master | Kling AI | ✅ | ✅ | ❌ |
-| Kling V2.1 | Kling AI | ✅ | ✅ | ❌ |
-| Kling V2.1 Master | Kling AI | ✅ | ✅ | ❌ |
-| Kling V2.5 Turbo | Kling AI | ✅ | ✅ | ❌ |
-| Hailuo 2.3 | MiniMax | ✅ | ✅ | ✅ |
-| Hailuo 2.3 Fast | MiniMax | ❌ | ✅ | ❌ |
-| Hailuo 02 | MiniMax | ✅ | ✅ | ✅ |
-| Hailuo O2 | MiniMax | ✅ | ✅ | ❌ |
-| Kling V2.6 Motion | Fal.ai | ❌ | ✅ | Motion Control |
+## Docker
 
-**Chat:**
-- **Gemini 2.0 Flash** - Chat conversations
+Build and run with Docker Compose:
 
-## 🛠️ Development
+```bash
+docker compose up -d --build
+```
 
-### Code Style
+App URL:
 
-See `code-style-guide.md` for detailed guidelines:
+```text
+http://localhost:3001
+```
 
-- **File Size Limits**: Components 300 lines, Utils 200 lines
-- **TypeScript**: Strict typing, avoid `any`
-- **Comments**: JSDoc for functions, section headers for organization
+Stop:
 
-### Adding New Features
+```bash
+docker compose down
+```
 
-1. Add UI components in `src/components/`
-2. Create custom hooks in `src/hooks/`
-3. Add API routes in `server/index.js`
-4. Update types in `src/types.ts`
+Important: the current `docker-compose.yml` came from the original project and still lists several legacy provider variables. For the current Volcengine workflow, make sure the container receives at least:
 
-## 🤝 Contributing
+```env
+ARK_API_KEY=...
+TOS_ACCESS_KEY_ID=...
+TOS_SECRET_ACCESS_KEY=...
+TOS_REGION=cn-shanghai
+TOS_ENDPOINT=tos-cn-shanghai.volces.com
+TOS_BUCKET=arkclaw--tsaoyang
+TOS_VIDEO_PREFIX=twitcanva/video
+TOS_PUBLIC_BASE_URL=https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com
+```
 
-Contributions are welcome! Please:
+The compose file mounts:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Follow the code style guide
-4. Commit your changes (`git commit -m 'Add amazing feature'`)
-5. Push to the branch (`git push origin feature/amazing-feature`)
-6. Open a Pull Request
+```text
+./library:/app/library
+```
 
-## 📝 License
+so local generated assets persist outside the container.
 
-This project is licensed under the Apache License 2.0.
+## Using the Canvas
 
-### Commercial Usage
-If you are using this project for commercial purposes or building a commercial product, please refer to the [NOTICE](file:///d:/AI_Agent_Practice/TwitCanva/NOTICE) file for notification requirements.
+1. Open the app.
+2. Create an image or video node from the canvas controls.
+3. Select Seedream 5.0 Pro for image generation or Seedance 2.0 for video generation.
+4. Connect image/video nodes to later nodes to use them as references.
+5. For Seedance, adjust the reference order in the node controls when the prompt uses terms such as `image 1`, `image 2`, or video references.
+6. For Ark asset library references, paste the asset ID into the Seedance asset ID field. The backend normalizes it to `asset://...`.
 
+## Seedream Image Generation
 
-## 🙏 Acknowledgments
+Seedream 5.0 Pro supports:
 
-- OpenAI for GPT Image generation
-- Google Gemini API for AI generation
-- Kling AI for video generation
-- MiniMax for Hailuo AI video generation
-- Fal.ai for Kling V2.6 Motion Control API
-- LangGraph for agent framework
-- React team for the amazing framework
-- Vite team for the blazing-fast build tool
+- Text-to-image.
+- Single image reference generation.
+- Multi-image reference generation, up to 10 connected image references.
+- Ordered reference inputs for prompts that refer to `image 1`, `image 2`, etc.
+- Interactive edit mode from Seedream image nodes.
 
----
+Interactive edit behavior:
 
-**Built with ❤️ using React, TypeScript, and AI APIs from OpenAI, Google, Kling, MiniMax, and Fal.ai (2025)**
+- Clicking generate immediately creates a new loading Image node.
+- Closing the edit modal only closes the modal.
+- The background generation continues and updates the new node on success or failure.
+- The source image node is preserved for comparison and rollback.
 
+## Seedance Video Generation
+
+Seedance 2.0 supports:
+
+- Text-to-video.
+- Image references.
+- Video references.
+- Mixed image and video references.
+- Ark asset IDs as `asset://...` references.
+- Reference ordering from the frontend.
+- `Auto`, `720p`, and `1080p` resolution options.
+- `Auto` duration or explicit duration up to 15 seconds.
+
+For video references:
+
+- Ark Seedance requires a web-accessible video URL.
+- Local generated videos are uploaded to TOS when TOS credentials are configured.
+- The resulting `tosPublicUrl` is stored in video metadata and reused for later video reference calls.
+
+## Local Data
+
+The app stores local data under `library/`:
+
+```text
+library/images/      # Generated and uploaded images
+library/videos/      # Generated videos and video metadata
+library/assets/      # Local app asset library
+library/chats/       # Chat sessions
+library/workflows/   # Saved workflows
+```
+
+Video metadata may include:
+
+```json
+{
+  "tosPublicUrl": "https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com/twitcanva/video/..."
+}
+```
+
+## Git and Secrets
+
+This customized repository is intended to include local code and local `library/` assets, but not secrets.
+
+Keep ignored:
+
+```text
+.env
+```
+
+Do not commit real API keys, TOS AK/SK, or other private credentials.
+
+## Troubleshooting
+
+`ARK_API_KEY not configured`
+
+- Add `ARK_API_KEY` to `.env`.
+- Restart the backend after changing `.env`.
+
+Seedance fails when using a local video reference
+
+- Configure TOS variables.
+- Make sure the source video has been uploaded and has a `tosPublicUrl`.
+- Use the TOS public URL as the Seedance `reference_video` input.
+
+TOS URL stays in resolving state
+
+- Check TOS credentials and bucket access.
+- Confirm the local video exists in `library/videos/`.
+- Confirm the backend can write metadata JSON next to the video file.
+
+GitHub large file warning
+
+- GitHub warns for files larger than 50 MB.
+- Files under 100 MB can still be pushed, but Git LFS is recommended for future large video assets.
