@@ -151,9 +151,9 @@ export const StoryboardVideoModal: React.FC<StoryboardVideoModalProps> = ({
         if (isOpen) {
             const initialPrompts: Record<string, string> = {};
             sortedScenes.forEach(scene => {
-                // If the scene prompt is an "Extract panel" command, we probably want a fresh description
+                // If the scene prompt is a panel extraction command, we probably want a fresh description
                 // If it's a creative prompt, use it
-                if (scene.prompt && !scene.prompt.startsWith('Extract panel')) {
+                if (scene.prompt && !scene.prompt.startsWith('Extract panel') && !scene.prompt.startsWith('从这张 storyboard')) {
                     initialPrompts[scene.id] = scene.prompt;
                 } else {
                     initialPrompts[scene.id] = '';
@@ -173,19 +173,19 @@ export const StoryboardVideoModal: React.FC<StoryboardVideoModalProps> = ({
         try {
             // Using a simple text generation endpoint that supports image input
             // Construct a context-rich prompt
-            let systemPrompt = "Describe this image in detail to be used as a prompt for video generation. Focus on the action, movement, and atmosphere. Keep it under 50 words.";
+            let systemPrompt = "请把这张图片描述成用于视频生成的中文 prompt。重点描述动作、镜头运动、人物状态和氛围。控制在 50 个中文词以内，只输出 prompt 本身。";
 
             if (storyContext) {
-                systemPrompt += `\n\nContext from Story: "${storyContext.story}"`;
+                systemPrompt += `\n\n故事上下文："${storyContext.story}"`;
                 // Try to find specific script info if possible (assuming index matches or title match)
                 const sceneIndex = sortedScenes.findIndex(s => s.id === nodeId);
                 if (sceneIndex !== -1 && storyContext.scripts[sceneIndex]) {
                     const script = storyContext.scripts[sceneIndex];
                     console.log(`[StoryboardModal] Injecting script for scene #${sceneIndex + 1}:`, script.description);
-                    systemPrompt += `\n\nScene Script: ${script.description}`;
-                    if (script.cameraAngle) systemPrompt += `\nCamera: ${script.cameraAngle} ${script.cameraMovement ? `(${script.cameraMovement})` : ''}`;
-                    if (script.lighting) systemPrompt += `\nLighting: ${script.lighting}`;
-                    if (script.mood) systemPrompt += `\nMood: ${script.mood}`;
+                    systemPrompt += `\n\n分镜脚本：${script.description}`;
+                    if (script.cameraAngle) systemPrompt += `\n镜头：${script.cameraAngle} ${script.cameraMovement ? `(${script.cameraMovement})` : ''}`;
+                    if (script.lighting) systemPrompt += `\n光线：${script.lighting}`;
+                    if (script.mood) systemPrompt += `\n氛围：${script.mood}`;
                 }
             }
 

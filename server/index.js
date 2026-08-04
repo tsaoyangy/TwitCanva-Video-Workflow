@@ -775,7 +775,7 @@ app.post('/api/gemini/describe-image', async (req, res) => {
             messages: [{
                 role: 'user',
                 content: [
-                    { type: 'text', text: prompt || "Describe this image in detail for video generation." },
+                    { type: 'text', text: prompt || "请把这张图片描述成用于视频生成的中文 prompt，重点描述动作、镜头运动和氛围。" },
                     {
                         type: 'image_url',
                         image_url: {
@@ -810,7 +810,7 @@ app.post('/api/gemini/optimize-prompt', async (req, res) => {
             return res.status(400).json({ error: 'Prompt is required' });
         }
 
-        const systemInstruction = "You are an expert video prompt engineer. Your goal is to rewrite the user's prompt to be descriptive, visual, and optimized for AI video generation models like Veo, Kling, and Hailuo. detailed, cinematic, and focused on motion and atmosphere. Keep it under 60 words. Output ONLY the rewritten prompt.";
+        const systemInstruction = "你是专业的视频生成 prompt 工程师。请把用户输入改写成中文视频生成 prompt，要求画面具体、动作清晰、镜头感强，并适合 Seedance、Veo、Kling、Hailuo 等视频生成模型。重点描述运动、镜头、氛围、光线和主体状态。控制在 60 个中文词以内。只输出改写后的 prompt，不要解释。";
         if (!ARK_API_KEY) {
             return res.status(500).json({ error: "ARK_API_KEY not configured. Add ARK_API_KEY to .env" });
         }

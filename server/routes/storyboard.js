@@ -176,9 +176,14 @@ STORY SYNOPSIS:
 ${story}
 
 Generate exactly ${count} scenes. Return a JSON object with:
-- "styleAnchor": A consistent style description (e.g., "photorealistic, cinematic lighting, 35mm film grain, high detail")
+- "styleAnchor": A consistent style description written in Chinese, for example "写实电影感，35mm 胶片质感，细腻光影，高细节"
 - "characterDNA": Object with detailed description for each character that stays CONSTANT
 - "scenes": Array of scene objects
+
+LANGUAGE REQUIREMENT:
+- Keep all JSON field names in English exactly as specified.
+- Write all user-facing values in Chinese by default, including styleAnchor, characterDNA values, scene description, cameraAngle, cameraMovement, lighting, and mood.
+- Keep @CharacterName mentions exactly as written, but describe their actions, emotion, lighting, and environment in Chinese.
 
 Each scene must have:
 - "sceneNumber": Scene number
@@ -195,18 +200,18 @@ IMPORTANT: When referring to the specific characters listed above, YOU MUST use 
 
 Example format:
 {
-  "styleAnchor": "photorealistic, cinematic, 35mm film, shallow depth of field",
+  "styleAnchor": "写实电影感，35mm 胶片质感，浅景深，细腻光影",
   "characterDNA": {
-    "Shawn": "Asian male, mid-20s, pink dyed wavy hair, round wire-frame glasses, clean-shaven, wearing light blue denim jacket over white t-shirt, dark jeans"
+    "Shawn": "亚洲男性，二十多岁，粉色微卷头发，圆形金属框眼镜，干净无胡须，穿浅蓝色牛仔夹克、白色 T 恤和深色牛仔裤"
   },
   "scenes": [
     {
       "sceneNumber": 1,
-      "description": "@Shawn stands in the doorway of an abandoned warehouse...",
-      "cameraAngle": "Wide shot",
-      "cameraMovement": "Static",
-      "lighting": "Dusty beams of afternoon sunlight streaming through broken windows",
-      "mood": "Mysterious, curious"
+      "description": "@Shawn 站在废弃仓库的门口，谨慎地向昏暗空间内张望，空气中漂浮着细小尘埃，环境显得空旷而压抑。",
+      "cameraAngle": "广角全景",
+      "cameraMovement": "静止镜头",
+      "lighting": "下午的阳光从破碎窗户斜射进来，形成带尘埃感的光束",
+      "mood": "神秘，好奇，略带紧张"
     }
   ]
 }
@@ -325,7 +330,7 @@ Respond ONLY with valid JSON, no other text.`;
 
         return res.json({
             scripts,
-            styleAnchor: styleAnchor || 'photorealistic, cinematic lighting, high detail',
+            styleAnchor: styleAnchor || '写实电影感，细腻光影，高细节',
             characterDNA: characterDNA || {}
         });
 
@@ -367,7 +372,7 @@ router.post('/brainstorm-story', async (req, res) => {
         
 ${characterContext}${genreHint}
 
-Create a compelling, concise story synopsis (3-5 sentences) that would make for an exciting visual storyboard.
+Create a compelling, concise Chinese story synopsis (3-5 sentences) that would make for an exciting visual storyboard.
 The story should:
 - Have a clear beginning, middle, and end
 - Include vivid visual moments that would look great as images
@@ -377,7 +382,9 @@ The story should:
 
 IMPORTANT: When referring to the specific characters listed above, YOU MUST use the format @CharacterName (e.g., if the character is "Shawn", write "@Shawn"). This triggers the asset link in the UI.
 
-Respond with ONLY the story synopsis, no additional text or formatting.`;
+Write the final story synopsis in Chinese by default. Keep @CharacterName mentions exactly as written.
+
+Respond with ONLY the optimized Chinese story synopsis, no additional text or formatting.`;
 
         // Process reference images for multimodal prompt
         const promptParts = [systemPrompt];
@@ -482,8 +489,9 @@ INSTRUCTIONS:
 4. Ensure clarity of action for each potential scene.
 5. Do NOT make it too long (keep it under 150 words).
 6. IMPORTANT: Ensure that any mentions of the following characters use the @Name syntax: ${characterNames && characterNames.length > 0 ? characterNames.join(', ') : 'None'}. For example, use "@Shawn" instead of "Shawn". This is critical.
+7. Write the final optimized story in Chinese by default. Keep @Name mentions exactly as written.
 
-Respond with ONLY the optimized story text.`;
+Respond with ONLY the optimized Chinese story text.`;
 
         const optimizedStory = (await retryOperation(() => generateSeedText({
             apiKey: ARK_API_KEY,
@@ -731,7 +739,7 @@ ${hasReferenceImages ? 'IMPORTANT: USE THE PROVIDED REFERENCE IMAGES as the ABSO
         
 STORY CONTEXT: The panels depict a sequence where the environment changes according to the script.
         
-ART STYLE: ${styleAnchor || 'photorealistic, cinematic lighting, detailed illustration'}
+ART STYLE: ${styleAnchor || '写实电影感，细腻光影，高细节插画'}
 Maintain this exact art style, color grading, and rendering technique across all panels.
 
 ${hasReferenceImages ? 'IMPORTANT: USE THE PROVIDED REFERENCE IMAGES as the ABSOLUTE GROUND TRUTH for the characters\' facial features, hair, and body type. Do NOT change their identity. If the text description conflicts with the reference image regarding physical appearance, FOLLOW THE IMAGE. The provided scripts have stripped text descriptions for these characters to rely solely on your visual understanding of the reference image.' : ''}

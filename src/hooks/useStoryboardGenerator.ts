@@ -399,8 +399,8 @@ export const useStoryboardGenerator = ({ onCreateNodes, viewport }: UseStoryboar
             // The composite image will be passed as the reference image
             const sceneNumber = script.sceneNumber || (index + 1);
             const prompt = state.compositeImageUrl
-                ? `Extract panel #${sceneNumber} from this storyboard reference image. Keep all characters, environment, colors, art style, and composition exactly the same. Recreate only this single panel as a standalone 16:9 image.`
-                : `${state.styleAnchor || 'photorealistic, cinematic lighting, high detail'}. ${script.description}. Camera: ${script.cameraAngle}. Mood: ${script.mood}.`;
+                ? `从这张 storyboard 参考图中提取第 ${sceneNumber} 个分镜画面。保持人物、环境、色彩、美术风格和构图完全一致。只重绘这一个分镜，将它作为独立的 16:9 图片输出。`
+                : `${state.styleAnchor || '写实电影感，细腻光影，高细节'}。${script.description}。镜头：${script.cameraAngle}。氛围：${script.mood}。`;
 
             // Use composite image as the primary reference, fallback to character images
             const referenceUrls = state.compositeImageUrl
