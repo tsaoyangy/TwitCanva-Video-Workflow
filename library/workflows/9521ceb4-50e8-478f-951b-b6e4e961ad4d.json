@@ -1,0 +1,186 @@
+{
+  "id": "9521ceb4-50e8-478f-951b-b6e4e961ad4d",
+  "title": "Untitled",
+  "nodes": [
+    {
+      "id": "c23fad3f-ccd3-4929-9136-3b150bd1c9bf",
+      "type": "Image",
+      "x": -184.07951523278015,
+      "y": 136.47967115779312,
+      "prompt": "从这张 storyboard 参考图中提取第 1 个分镜画面。保持人物、环境、色彩、美术风格和构图完全一致。只重绘这一个分镜，将它作为独立的 16:9 图片输出。",
+      "status": "success",
+      "model": "seedream-5.0-pro",
+      "imageModel": "seedream-5.0-pro",
+      "aspectRatio": "16:9",
+      "resolution": "1K",
+      "title": "Scene 1",
+      "parentIds": [],
+      "groupId": "9b289f91-f410-4588-a902-c521b3160b5a",
+      "characterReferenceUrls": [
+        "/library/images/storyboard_composite_1785854177366.png"
+      ],
+      "generationStartTime": 1785854184305,
+      "resultUrl": "/library/images/img_1785854237305_wu5ohvc43.png?t=1785854237309",
+      "resultAspectRatio": "1536/864"
+    },
+    {
+      "id": "aad38e61-c47a-449a-b533-e04c15425dee",
+      "type": "Image",
+      "x": 688.9204847672204,
+      "y": 139.47967115779312,
+      "prompt": "从这张 storyboard 参考图中提取第 3 个分镜画面。保持人物、环境、色彩、美术风格和构图完全一致。只重绘这一个分镜，将它作为独立的 16:9 图片输出。",
+      "status": "success",
+      "model": "seedream-5.0-pro",
+      "imageModel": "seedream-5.0-pro",
+      "aspectRatio": "16:9",
+      "resolution": "1K",
+      "title": "Scene 3",
+      "parentIds": [],
+      "groupId": "9b289f91-f410-4588-a902-c521b3160b5a",
+      "characterReferenceUrls": [
+        "/library/images/storyboard_composite_1785854177366.png"
+      ],
+      "generationStartTime": 1785854185306,
+      "resultUrl": "/library/images/img_1785854244018_8jbvtgqlk.png?t=1785854244022",
+      "resultAspectRatio": "1536/864"
+    },
+    {
+      "id": "83f9e550-274b-40b8-9226-8bfa0ff97e6d",
+      "type": "Video",
+      "x": 467.80494402656643,
+      "y": 709.9652586759512,
+      "prompt": "以图1作为当前分镜主参考生成视频。其余参考图用于保持角色、场景、美术风格和镜头连续性，不要把其他分镜内容混入当前镜头。航拍超广角升降镜头，晨雾绕翠峰，白鹭群飞。三人静立断崖，衣袂微动，身影渺小庄重，氛围悠远肃穆。",
+      "status": "loading",
+      "model": "seedance-2.0",
+      "videoModel": "seedance-2.0",
+      "videoDuration": 5,
+      "aspectRatio": "16:9",
+      "resolution": "720p",
+      "parentIds": [
+        "c23fad3f-ccd3-4929-9136-3b150bd1c9bf",
+        "aad38e61-c47a-449a-b533-e04c15425dee"
+      ],
+      "videoMode": "standard",
+      "inputUrl": "/library/images/img_1785854237305_wu5ohvc43.png?t=1785854237309",
+      "seedanceReferenceOrder": [
+        {
+          "type": "node",
+          "id": "c23fad3f-ccd3-4929-9136-3b150bd1c9bf"
+        },
+        {
+          "type": "node",
+          "id": "aad38e61-c47a-449a-b533-e04c15425dee"
+        }
+      ],
+      "generationStartTime": 1785857361847
+    },
+    {
+      "id": "b9384ebb-ca6d-447b-b50b-46e57c9588e1",
+      "type": "Video",
+      "x": 1244.2776669195498,
+      "y": 449.881111266631,
+      "prompt": "以图1作为当前分镜主参考生成视频。其余参考图用于保持角色、场景、美术风格和镜头连续性，不要把其他分镜内容混入当前镜头。推轨过肩中景，二人背向拾级而上，虎纹浮金，浓雾分列白鹭惊飞，天光穿云，肃穆磅礴，神力觉醒。",
+      "status": "loading",
+      "model": "seedance-2.0",
+      "videoModel": "seedance-2.0",
+      "videoDuration": 5,
+      "aspectRatio": "16:9",
+      "resolution": "720p",
+      "parentIds": [
+        "aad38e61-c47a-449a-b533-e04c15425dee",
+        "c23fad3f-ccd3-4929-9136-3b150bd1c9bf"
+      ],
+      "videoMode": "standard",
+      "inputUrl": "/library/images/img_1785854244018_8jbvtgqlk.png?t=1785854244022",
+      "seedanceReferenceOrder": [
+        {
+          "type": "node",
+          "id": "aad38e61-c47a-449a-b533-e04c15425dee"
+        },
+        {
+          "type": "node",
+          "id": "c23fad3f-ccd3-4929-9136-3b150bd1c9bf"
+        }
+      ],
+      "generationStartTime": 1785857362848
+    }
+  ],
+  "groups": [
+    {
+      "id": "9b289f91-f410-4588-a902-c521b3160b5a",
+      "nodeIds": [
+        "c23fad3f-ccd3-4929-9136-3b150bd1c9bf",
+        "b33b2d04-69b3-490c-abbf-1fe5366e2a85",
+        "aad38e61-c47a-449a-b533-e04c15425dee"
+      ],
+      "label": "Storyboard 22:36:24",
+      "storyContext": {
+        "story": "晨雾如纱，缠绕@background万峰叠翠。银发垂肩、白袍绣墨虎的@My Assets立于断崖，酒红内衬随山风微动。他命身著白紫渐变长裙、发系白绫的@My Assets闭目，按手青苔岩壁。刹那间，@My Assets袍上虎纹活转，低啸震飞林间白鹭，浓雾裂分两侧，露出通往山巅剑冢的石阶。二人拾级而上，苍翠群山如古老守护者缓缓俯伏，见证传承开启。",
+        "scripts": [
+          {
+            "sceneNumber": 1,
+            "description": "晨雾如薄纱缠绕在@background 万峰叠翠的层峦间，浓绿原始森林覆满陡峭山体，零星白鹭从林梢掠过高空。远端视野的断崖边缘，@My Assets。 负手静立，白袍酒红内衬的边角随山风微动，身侧的@My Assets 衣袂翩然，二人身影在漫山雾气中显得渺小而庄重。",
+            "cameraAngle": "航拍超广角大远景",
+            "cameraMovement": "升降镜头",
+            "lighting": "清晨多云天气的柔和漫射天光，雾气柔化所有景物边缘，远山色阶偏冷绿，整体光线通透温润",
+            "mood": "悠远静谧，带着未被惊扰的上古秘境肃穆感"
+          },
+          {
+            "sceneNumber": 2,
+            "description": "@My Assets。 沉声示意@My Assets 闭目凝神，@My Assets 依言合上双眼，掌心轻轻覆在身侧覆满青苔的粗糙岩壁上。刹那间@My Assets。 白袍上的墨虎绣纹如同活转，虎目亮起沉暗光泽，低沉虎啸顺着山风荡开，林间栖息的白鹭成群振翅惊飞，浓稠浓雾顺着声浪向两侧轰然裂分。",
+            "cameraAngle": "过肩中景",
+            "cameraMovement": "推轨镜头",
+            "lighting": "柔和漫射天光落在人物面庞与衣料上，岩壁青苔反射冷调绿光，虎纹异动时浮起一层淡金微光，雾裂后云隙漏下的丁达尔光束清晰可见",
+            "mood": "肃穆紧绷，充满神力觉醒的磅礴震撼感"
+          },
+          {
+            "sceneNumber": 3,
+            "description": "浓雾裂开处，覆着薄青苔的古老石阶从断崖尽头一路延伸向云遮雾绕的山巅剑冢，@My Assets。 率先抬步拾级而上，@My Assets 静随其后。两侧苍翠群峰在流转雾气里仿佛沉眠千年的守护者正缓缓俯伏，散飞的白鹭在天际盘旋，见证这场沉寂已久的传承正式开启。",
+            "cameraAngle": "低角度广角全景",
+            "cameraMovement": "升降镜头",
+            "lighting": "云隙漏下的束状暖金晨光落在石阶与二人背影上，雾气被光线染成半透明的薄金色，群峰明暗层次开阔柔和",
+            "mood": "恢弘沉静，带着宿命传承的庄严感与面向未知的希望感"
+          }
+        ],
+        "selectedCharacters": [
+          {
+            "id": "367caf5c-668b-43ff-b5ad-6f8d9a1e9c96",
+            "name": "My Assets。",
+            "url": "/library/assets/Character/my_assets_.png",
+            "description": "",
+            "category": "Character"
+          },
+          {
+            "id": "3fa5d9db-af0c-4fd8-9787-d4a14712c2ca",
+            "name": "My Assets",
+            "url": "/library/assets/Character/my_assets.png",
+            "description": "",
+            "category": "Character"
+          },
+          {
+            "id": "60aff10d-bf1b-407e-9c2c-b3332474221d",
+            "name": "background",
+            "url": "/library/assets/Character/background.jpg",
+            "description": "",
+            "category": "Character"
+          }
+        ],
+        "sceneCount": 3,
+        "styleAnchor": "写实电影感，35mm胶片质感，国风仙侠意境，细腻晨雾空气透视，自然柔和光影，高细节纹理",
+        "characterDNA": {
+          "My Assets。": "东亚老年男性，面容威严沉毅，轮廓棱角分明，银白长发垂至腰际、发尾自然渐变酒红色，生着银白剑眉与整齐短须；身着米白色缎面交领广袖长袍，酒红色内衬，袍身衣袖与后背绣有墨色猛虎搭配云纹刺绣，腰系錾花铜质腰带，垂挂红穗圆佩，足蹬白色云纹布靴，气质苍劲肃然",
+          "My Assets": "东亚年轻女性，容貌清柔温婉，眉眼澄澈；乌黑长发半挽成简约发髻，系素白色绫缎发带、带身自然垂落背后，身着白紫渐变薄纱交领汉服长裙，腰束浅紫色系带结垂至裙摆，广袖上点缀细碎银白暗纹，气质出尘宁静",
+          "background": "喀斯特岩溶峰林景观，连绵陡峭的山体全覆盖浓密亚热带原始常绿林，岩壁深翠覆满青苔，山间常萦绕乳白色晨雾，林区栖息成群白鹭，远景层峦叠嶂直入多云的天际"
+        },
+        "compositeImageUrl": "/library/images/storyboard_composite_1785854177366.png"
+      }
+    }
+  ],
+  "viewport": {
+    "x": 9.788305789291087,
+    "y": 128.56791238198355,
+    "zoom": 0.5283480641793922
+  },
+  "updatedAt": "2026-08-04T15:30:50.401Z",
+  "createdAt": "2026-08-04T15:30:50.401Z"
+}

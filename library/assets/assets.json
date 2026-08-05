@@ -33,28 +33,27 @@
     "createdAt": "2026-07-21T14:52:49.071Z"
   },
   {
-    "id": "32a81fef-b10d-4a77-81fd-2e853c4f7bd0",
-    "name": "shortdrama",
-    "category": "Character",
-    "url": "/library/assets/Character/shortdrama.png",
-    "type": "image",
-    "createdAt": "2026-08-04T10:16:40.882Z",
-    "updatedAt": "2026-08-04T10:16:55.628Z"
-  },
-  {
-    "id": "b737ed6a-78a5-4b27-abf8-3d37e6bfc280",
-    "name": "shortdrama02",
-    "category": "Character",
-    "url": "/library/assets/Character/shortdrama02.png",
-    "type": "image",
-    "createdAt": "2026-08-04T10:17:38.794Z"
-  },
-  {
     "id": "60aff10d-bf1b-407e-9c2c-b3332474221d",
     "name": "background",
     "category": "Character",
     "url": "/library/assets/Character/background.jpg",
     "type": "image",
     "createdAt": "2026-08-04T10:17:54.696Z"
+  },
+  {
+    "id": "3fa5d9db-af0c-4fd8-9787-d4a14712c2ca",
+    "name": "My Assets",
+    "category": "Character",
+    "url": "/library/assets/Character/my_assets.png",
+    "type": "image",
+    "createdAt": "2026-08-04T14:31:36.686Z"
+  },
+  {
+    "id": "367caf5c-668b-43ff-b5ad-6f8d9a1e9c96",
+    "name": "My Assets。",
+    "category": "Character",
+    "url": "/library/assets/Character/my_assets_.png",
+    "type": "image",
+    "createdAt": "2026-08-04T14:31:45.578Z"
   }
 ]

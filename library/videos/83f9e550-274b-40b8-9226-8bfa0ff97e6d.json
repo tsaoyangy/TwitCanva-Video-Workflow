@@ -1,0 +1,13 @@
+{
+  "id": "83f9e550-274b-40b8-9226-8bfa0ff97e6d",
+  "filename": "vid_1785857619813_inpcum7w8.mp4",
+  "prompt": "以图1作为当前分镜主参考生成视频。其余参考图用于保持角色、场景、美术风格和镜头连续性，不要把其他分镜内容混入当前镜头。航拍超广角升降镜头，晨雾绕翠峰，白鹭群飞。三人静立断崖，衣袂微动，身影渺小庄重，氛围悠远肃穆。",
+  "model": "seedance-2.0",
+  "aspectRatio": "16:9",
+  "resolution": "720p",
+  "createdAt": "2026-08-04T15:33:50.456Z",
+  "type": "videos",
+  "tosBucket": "arkclaw--tsaoyang",
+  "tosKey": "twitcanva/video/vid_1785857619813_inpcum7w8.mp4",
+  "tosPublicUrl": "https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com/twitcanva/video/vid_1785857619813_inpcum7w8.mp4"
+}

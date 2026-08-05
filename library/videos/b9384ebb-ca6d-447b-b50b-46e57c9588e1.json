@@ -1,0 +1,13 @@
+{
+  "id": "b9384ebb-ca6d-447b-b50b-46e57c9588e1",
+  "filename": "vid_1785857730476_2kokvengo.mp4",
+  "prompt": "以图1作为当前分镜主参考生成视频。其余参考图用于保持角色、场景、美术风格和镜头连续性，不要把其他分镜内容混入当前镜头。推轨过肩中景，二人背向拾级而上，虎纹浮金，浓雾分列白鹭惊飞，天光穿云，肃穆磅礴，神力觉醒。",
+  "model": "seedance-2.0",
+  "aspectRatio": "16:9",
+  "resolution": "720p",
+  "createdAt": "2026-08-04T15:35:33.969Z",
+  "type": "videos",
+  "tosBucket": "arkclaw--tsaoyang",
+  "tosKey": "twitcanva/video/vid_1785857730476_2kokvengo.mp4",
+  "tosPublicUrl": "https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com/twitcanva/video/vid_1785857730476_2kokvengo.mp4"
+}

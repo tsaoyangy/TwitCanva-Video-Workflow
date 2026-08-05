@@ -1,0 +1,8 @@
+{
+  "id": "ef6d12dc-1262-4fac-a0f1-0e8b82ef4d5b",
+  "filename": "img_1785853837180_068om1fw6.png",
+  "prompt": "从这张 storyboard 参考图中提取第 1 个分镜画面。保持人物、环境、色彩、美术风格和构图完全一致。只重绘这一个分镜，将它作为独立的 16:9 图片输出。",
+  "model": "seedream-5.0-pro",
+  "createdAt": "2026-08-04T14:30:37.181Z",
+  "type": "images"
+}
