@@ -1,0 +1,13 @@
+{
+  "id": "7521c543-a592-435e-83bf-808cf7450b5a",
+  "filename": "vid_1786092622398_v6sg37ywh.mp4",
+  "prompt": "严格编辑 @视频1，将@视频1中出现的人物面部替换为 @图片1 中的短发、单眼皮女生，确保保证人物眼皮上的眼影颜色和@视频1中的人物眼皮上的眼影颜色一样。其他保持不变 ",
+  "model": "seedance-2.5",
+  "aspectRatio": "adaptive",
+  "resolution": "Auto",
+  "createdAt": "2026-08-07T08:50:35.356Z",
+  "type": "videos",
+  "tosBucket": "arkclaw--tsaoyang",
+  "tosKey": "twitcanva/video/vid_1786092622398_v6sg37ywh.mp4",
+  "tosPublicUrl": "https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com/twitcanva/video/vid_1786092622398_v6sg37ywh.mp4"
+}
