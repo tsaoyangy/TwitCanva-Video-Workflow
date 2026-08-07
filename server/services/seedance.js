@@ -1,28 +1,47 @@
 /**
  * seedance.js
  *
- * Official Volcengine Ark Seedance 2.0 video generation service.
- * Supports:
+ * Official Volcengine Ark Seedance video generation service.
+ * Supports Seedance 2.0 (2.0 / Fast / Mini) and Seedance 2.5.
+ * Capabilities:
  * - Text-to-video
  * - Reference-image/video multimodal video generation
  * - Reference-image video generation via Ark asset ID (asset://...)
+ *
+ * Seedance 2.5 specifics (doubao-seedance-2-5-260628):
+ * - Resolution limited to 480p / 720p
+ * - Duration 4~30s (-1 = auto)
+ * - Ratio supports adaptive
+ * - Optional: seed / camera_fixed / watermark / output_format (mp4|mov)
  */
 
 const ARK_BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3';
 
-function mapSeedanceModelName(modelId) {
-    const mapping = {
-        'seedance-2.0': 'doubao-seedance-2-0-260128',
-        'seedance-2.0-fast': 'doubao-seedance-2-0-fast-260128',
-        'seedance-2.0-mini': 'doubao-seedance-2-0-mini-260615'
-    };
+const SEEDANCE_MODEL_MAP = {
+    'seedance-2.0': 'doubao-seedance-2-0-260128',
+    'seedance-2.0-fast': 'doubao-seedance-2-0-fast-260128',
+    'seedance-2.0-mini': 'doubao-seedance-2-0-mini-260615',
+    'seedance-2.5': 'doubao-seedance-2-5-260628'
+};
 
-    return mapping[modelId] || mapping['seedance-2.0'];
+function mapSeedanceModelName(modelId) {
+    return SEEDANCE_MODEL_MAP[modelId] || SEEDANCE_MODEL_MAP['seedance-2.0'];
 }
 
-function mapAspectRatio(aspectRatio) {
+function isSeedance25(modelId) {
+    return modelId === 'seedance-2.5';
+}
+
+function mapAspectRatio(aspectRatio, { isV25 = false } = {}) {
+    const value = (aspectRatio || '').trim().toLowerCase();
+
+    if (value === 'adaptive') {
+        // Adaptive only supported by Seedance 2.5; fall back to 16:9 otherwise.
+        return isV25 ? 'adaptive' : '16:9';
+    }
+
     const mapping = {
-        'Auto': '16:9',
+        'auto': '16:9',
         '16:9': '16:9',
         '9:16': '9:16',
         '1:1': '1:1',
@@ -31,32 +50,61 @@ function mapAspectRatio(aspectRatio) {
         '21:9': '21:9'
     };
 
-    return mapping[aspectRatio] || '16:9';
+    return mapping[value] || '16:9';
 }
 
-function mapResolution(resolution) {
+function mapResolution(resolution, { isV25 = false } = {}) {
+    const value = (resolution || '').trim().toLowerCase();
+
+    if (isV25) {
+        // Seedance 2.5 only supports 480p / 720p.
+        const mapping25 = {
+            'auto': '720p',
+            '512p': '480p',
+            '480p': '480p',
+            '768p': '720p',
+            '720p': '720p',
+            '1080p': '720p',
+            '4k': '720p'
+        };
+        return mapping25[value] || '720p';
+    }
+
     const mapping = {
-        'Auto': '720p',
+        'auto': '720p',
         '512p': '480p',
         '480p': '480p',
         '768p': '720p',
         '720p': '720p',
         '1080p': '1080p',
-        '4K': '4k',
         '4k': '4k'
     };
 
-    return mapping[resolution] || '720p';
+    return mapping[value] || '720p';
 }
 
-function mapDuration(duration) {
+function mapDuration(duration, { isV25 = false } = {}) {
     if (duration === undefined || duration === null || duration === '' || duration === 'Auto') {
         return undefined;
     }
 
     const numeric = Number(duration);
     if (!Number.isFinite(numeric)) return undefined;
-    return Math.max(4, Math.min(15, Math.round(numeric)));
+
+    // -1 requests automatic duration (supported by Seedance 2.5).
+    if (numeric === -1) {
+        return isV25 ? -1 : undefined;
+    }
+
+    const maxDuration = isV25 ? 30 : 15;
+    return Math.max(4, Math.min(maxDuration, Math.round(numeric)));
+}
+
+function normalizeOutputFormat(outputFormat, { isV25 = false } = {}) {
+    if (!isV25) return undefined;
+    const value = (outputFormat || '').trim().toLowerCase();
+    if (value === 'mp4' || value === 'mov') return value;
+    return undefined;
 }
 
 function normalizeAssetId(assetId) {
@@ -95,12 +143,12 @@ function isVideoReference(url) {
         normalized.includes('/library/videos/');
 }
 
-function buildContent({ prompt, referenceImages, referenceAssetId }) {
+function buildContent({ prompt, referenceImages, referenceAssetId, maxReferences = 9 }) {
     const content = [];
     const referenceUrls = [
         ...toArray(referenceImages),
         ...toArray(referenceAssetId).map(normalizeAssetId).filter(Boolean)
-    ].slice(0, 9);
+    ].slice(0, maxReferences);
 
     if (prompt && prompt.trim()) {
         content.push({
@@ -181,6 +229,10 @@ export async function generateSeedanceVideo({
     resolution,
     duration,
     generateAudio = true,
+    seed,
+    cameraFixed,
+    watermark,
+    outputFormat,
     modelId,
     apiKey
 }) {
@@ -188,13 +240,17 @@ export async function generateSeedanceVideo({
         throw new Error('ARK_API_KEY not configured');
     }
 
+    const isV25 = isSeedance25(modelId);
     const model = mapSeedanceModelName(modelId);
-    const mappedDuration = mapDuration(duration);
+    const mappedDuration = mapDuration(duration, { isV25 });
+    // Seedance 2.5 accepts up to 30 reference images; 2.0 series caps at 9.
+    const maxReferences = isV25 ? 30 : 9;
+
     const body = {
         model,
-        content: buildContent({ prompt, referenceImages, referenceAssetId }),
-        resolution: mapResolution(resolution),
-        ratio: mapAspectRatio(aspectRatio),
+        content: buildContent({ prompt, referenceImages, referenceAssetId, maxReferences }),
+        resolution: mapResolution(resolution, { isV25 }),
+        ratio: mapAspectRatio(aspectRatio, { isV25 }),
         generate_audio: generateAudio,
         return_last_frame: true
     };
@@ -203,12 +259,37 @@ export async function generateSeedanceVideo({
         body.duration = mappedDuration;
     }
 
+    if (typeof cameraFixed === 'boolean') {
+        body.camera_fixed = cameraFixed;
+    }
+
+    if (typeof watermark === 'boolean') {
+        body.watermark = watermark;
+    }
+
+    // Seed: -1 (or empty) means random; only forward finite integers.
+    if (seed !== undefined && seed !== null && seed !== '') {
+        const numericSeed = Number(seed);
+        if (Number.isFinite(numericSeed) && numericSeed >= 0) {
+            body.seed = Math.round(numericSeed);
+        }
+    }
+
+    const normalizedOutputFormat = normalizeOutputFormat(outputFormat, { isV25 });
+    if (normalizedOutputFormat) {
+        body.output_format = normalizedOutputFormat;
+    }
+
     console.log('[Seedance] Creating task with:', {
         model,
         duration: body.duration,
         resolution: body.resolution,
         ratio: body.ratio,
         generateAudio: body.generate_audio,
+        cameraFixed: body.camera_fixed,
+        watermark: body.watermark,
+        seed: body.seed,
+        outputFormat: body.output_format,
         referenceImageCount: toArray(referenceImages).length,
         hasReferenceAssetId: !!normalizeAssetId(referenceAssetId)
     });

@@ -32,7 +32,8 @@ interface StoryboardVideoModalProps {
 const VIDEO_RESOLUTIONS = ["Auto", "1080p", "768p", "720p", "512p"];
 
 const VIDEO_MODELS = [
-    { id: 'seedance-2.0', name: 'Seedance 2.0', provider: 'volcengine', recommended: true, durations: [5, 6, 8, 10, 12, 15], resolutions: ['Auto', '720p', '1080p'] },
+    { id: 'seedance-2.5', name: 'Seedance 2.5', provider: 'volcengine', recommended: true, durations: [4, 5, 6, 8, 10, 12, 15, 20, 25, 30], resolutions: ['Auto', '480p', '720p'] },
+    { id: 'seedance-2.0', name: 'Seedance 2.0', provider: 'volcengine', durations: [5, 6, 8, 10, 12, 15], resolutions: ['Auto', '720p', '1080p'] },
     { id: 'seedance-2.0-fast', name: 'Seedance 2.0 Fast', provider: 'volcengine', durations: [5, 6, 8, 10, 12, 15], resolutions: ['Auto', '720p', '1080p'] },
     { id: 'seedance-2.0-mini', name: 'Seedance 2.0 Mini', provider: 'volcengine', durations: [5, 6, 8, 10, 12, 15], resolutions: ['Auto', '720p', '1080p'] },
     {
@@ -80,7 +81,7 @@ export const StoryboardVideoModal: React.FC<StoryboardVideoModalProps> = ({
 
     const [prompts, setPrompts] = useState<Record<string, string>>({});
     const [settings, setSettings] = useState({
-        model: 'seedance-2.0',
+        model: 'seedance-2.5',
         duration: 5,
         resolution: '720p'
     });

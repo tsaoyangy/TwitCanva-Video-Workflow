@@ -51,7 +51,8 @@ const VIDEO_ASPECT_RATIOS = ["16:9", "9:16"];
 
 const VIDEO_MODELS = [
     { id: 'veo-3.1', name: 'Veo 3.1', provider: 'google', supportsTextToVideo: true, supportsImageToVideo: true, supportsMultiImage: true, durations: [4, 6, 8], resolutions: ['Auto', '720p', '1080p'], aspectRatios: ['16:9', '9:16'] },
-    { id: 'seedance-2.0', name: 'Seedance 2.0', provider: 'volcengine', supportsTextToVideo: true, supportsImageToVideo: true, supportsMultiImage: true, recommended: true, durations: ['Auto', 5, 6, 8, 10, 12, 15], resolutions: ['Auto', '720p', '1080p'], aspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9'] },
+    { id: 'seedance-2.5', name: 'Seedance 2.5', provider: 'volcengine', supportsTextToVideo: true, supportsImageToVideo: true, supportsMultiImage: true, recommended: true, durations: ['Auto', 4, 5, 6, 8, 10, 12, 15, 20, 25, 30], resolutions: ['Auto', '480p', '720p'], aspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9', 'adaptive'] },
+    { id: 'seedance-2.0', name: 'Seedance 2.0', provider: 'volcengine', supportsTextToVideo: true, supportsImageToVideo: true, supportsMultiImage: true, durations: ['Auto', 5, 6, 8, 10, 12, 15], resolutions: ['Auto', '720p', '1080p'], aspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9'] },
     { id: 'seedance-2.0-fast', name: 'Seedance 2.0 Fast', provider: 'volcengine', supportsTextToVideo: true, supportsImageToVideo: true, supportsMultiImage: true, durations: ['Auto', 5, 6, 8, 10, 12, 15], resolutions: ['Auto', '720p', '1080p'], aspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9'] },
     { id: 'seedance-2.0-mini', name: 'Seedance 2.0 Mini', provider: 'volcengine', supportsTextToVideo: true, supportsImageToVideo: true, supportsMultiImage: true, durations: ['Auto', 5, 6, 8, 10, 12, 15], resolutions: ['Auto', '720p', '1080p'], aspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9'] },
     // Kling AI models - Consolidated: removed legacy v1, v1-5, v1-6, v2-master
@@ -1539,6 +1540,90 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
 
                                 {data.videoModel?.startsWith('seedance-') && (
                                     <div className="space-y-3">
+                                        {/* Seedance generation parameters */}
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            {/* Audio toggle */}
+                                            <div className="inline-flex items-center gap-2 px-2.5 py-1.5 bg-neutral-800/50 rounded-lg w-fit">
+                                                <span className="text-[11px] text-neutral-300">Audio</span>
+                                                <button
+                                                    onClick={() => onUpdate(data.id, { generateAudio: !(data.generateAudio !== false) })}
+                                                    className={`relative w-8 h-4 rounded-full transition-colors ${data.generateAudio !== false ? 'bg-cyan-600' : 'bg-neutral-700'}`}
+                                                    title="Generate native audio"
+                                                >
+                                                    <span
+                                                        className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow-md ${data.generateAudio !== false ? 'left-4' : 'left-0.5'}`}
+                                                    />
+                                                </button>
+                                            </div>
+
+                                            {/* Camera fixed toggle */}
+                                            <div className="inline-flex items-center gap-2 px-2.5 py-1.5 bg-neutral-800/50 rounded-lg w-fit">
+                                                <span className="text-[11px] text-neutral-300">Fixed Camera</span>
+                                                <button
+                                                    onClick={() => onUpdate(data.id, { seedanceCameraFixed: !data.seedanceCameraFixed })}
+                                                    className={`relative w-8 h-4 rounded-full transition-colors ${data.seedanceCameraFixed ? 'bg-cyan-600' : 'bg-neutral-700'}`}
+                                                    title="Keep camera fixed (disable camera motion)"
+                                                >
+                                                    <span
+                                                        className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow-md ${data.seedanceCameraFixed ? 'left-4' : 'left-0.5'}`}
+                                                    />
+                                                </button>
+                                            </div>
+
+                                            {/* Watermark toggle */}
+                                            <div className="inline-flex items-center gap-2 px-2.5 py-1.5 bg-neutral-800/50 rounded-lg w-fit">
+                                                <span className="text-[11px] text-neutral-300">Watermark</span>
+                                                <button
+                                                    onClick={() => onUpdate(data.id, { seedanceWatermark: !data.seedanceWatermark })}
+                                                    className={`relative w-8 h-4 rounded-full transition-colors ${data.seedanceWatermark ? 'bg-cyan-600' : 'bg-neutral-700'}`}
+                                                    title="Add watermark to generated video"
+                                                >
+                                                    <span
+                                                        className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow-md ${data.seedanceWatermark ? 'left-4' : 'left-0.5'}`}
+                                                    />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-wrap items-end gap-3">
+                                            {/* Seed input */}
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] text-neutral-500 uppercase tracking-wider block">
+                                                    Seed
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    min={0}
+                                                    value={data.seedanceSeed ?? ''}
+                                                    onChange={(e) => {
+                                                        const raw = e.target.value;
+                                                        onUpdate(data.id, {
+                                                            seedanceSeed: raw === '' ? undefined : Number(raw)
+                                                        });
+                                                    }}
+                                                    placeholder="Random"
+                                                    className="w-24 px-2.5 py-1.5 bg-neutral-800 border border-neutral-700 rounded-lg text-xs text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-cyan-600"
+                                                />
+                                            </div>
+
+                                            {/* Output format (Seedance 2.5 only) */}
+                                            {data.videoModel === 'seedance-2.5' && (
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] text-neutral-500 uppercase tracking-wider block">
+                                                        Format
+                                                    </label>
+                                                    <select
+                                                        value={data.seedanceOutputFormat || 'mp4'}
+                                                        onChange={(e) => onUpdate(data.id, { seedanceOutputFormat: e.target.value as 'mp4' | 'mov' })}
+                                                        className="px-2.5 py-1.5 bg-neutral-800 border border-neutral-700 rounded-lg text-xs text-neutral-200 focus:outline-none focus:border-cyan-600"
+                                                    >
+                                                        <option value="mp4">mp4</option>
+                                                        <option value="mov">mov</option>
+                                                    </select>
+                                                </div>
+                                            )}
+                                        </div>
+
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] text-neutral-500 uppercase tracking-wider">
                                                 Ark Asset ID

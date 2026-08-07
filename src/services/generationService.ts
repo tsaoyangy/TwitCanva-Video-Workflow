@@ -31,7 +31,11 @@ export interface GenerateVideoParams {
   motionReferenceUrl?: string; // For Kling 2.6 motion control
   seedanceReferenceAssetId?: string; // For Seedance asset library reference
   seedanceReferenceInputs?: string[]; // Ordered Seedance reference images/assets
-  generateAudio?: boolean; // For Kling 2.6 and Veo 3.1 native audio (default: true)
+  seedanceSeed?: number; // Seedance random seed (>=0). Omit/-1 for random
+  seedanceCameraFixed?: boolean; // Seedance: keep camera fixed (no camera motion)
+  seedanceWatermark?: boolean; // Seedance: add watermark to output
+  seedanceOutputFormat?: 'mp4' | 'mov'; // Seedance 2.5 output container format
+  generateAudio?: boolean; // For Kling 2.6, Veo 3.1 and Seedance native audio (default: true)
   nodeId?: string; // ID of the node initiating generation
 }
 

@@ -54,11 +54,16 @@ export interface NodeData {
   frameInputs?: { nodeId: string; order: 'start' | 'end' }[]; // For frame-to-frame: connected image nodes
   videoModel?: string; // Video model version (e.g., 'veo-3.1', 'kling-v2-1')
   videoDuration?: number; // Video duration in seconds (e.g., 5, 6, 8, 10)
-  generateAudio?: boolean; // Whether to generate native audio (Kling 2.6, Veo 3.1)
+  generateAudio?: boolean; // Whether to generate native audio (Kling 2.6, Veo 3.1, Seedance)
   inputUrl?: string; // Input URL for video generation (image-to-video)
   seedanceReferenceAssetId?: string; // Optional asset library reference ID for Seedance
   seedanceReferenceOrder?: SeedanceReferenceOrderItem[]; // Ordered Seedance reference inputs
   seedreamReferenceOrder?: SeedreamReferenceOrderItem[]; // Ordered Seedream reference inputs
+  // Seedance advanced params (mainly Seedance 2.5)
+  seedanceSeed?: number; // Random seed (>=0); undefined/-1 for random
+  seedanceCameraFixed?: boolean; // Keep camera fixed (disable camera motion)
+  seedanceWatermark?: boolean; // Add watermark to generated video
+  seedanceOutputFormat?: 'mp4' | 'mov'; // Output container format (Seedance 2.5)
 
   // Video Editor specific
   trimStart?: number; // Trim start time in seconds

@@ -383,7 +383,11 @@ export const useGeneration = ({ nodes, updateNode }: UseGenerationProps) => {
                     motionReferenceUrl,
                     seedanceReferenceAssetId: node.seedanceReferenceAssetId,
                     seedanceReferenceInputs,
-                    generateAudio: node.generateAudio, // For Kling 2.6 and Veo 3.1 native audio
+                    seedanceSeed: node.seedanceSeed,
+                    seedanceCameraFixed: node.seedanceCameraFixed,
+                    seedanceWatermark: node.seedanceWatermark,
+                    seedanceOutputFormat: node.seedanceOutputFormat,
+                    generateAudio: node.generateAudio, // For Kling 2.6, Veo 3.1 and Seedance native audio
                     nodeId: id
                 });
 

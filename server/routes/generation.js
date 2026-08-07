@@ -352,7 +352,7 @@ router.post('/seedream-edit', async (req, res) => {
 
 router.post('/generate-video', async (req, res) => {
     try {
-        const { nodeId, prompt, imageBase64: rawImageBase64, lastFrameBase64: rawLastFrameBase64, motionReferenceUrl: rawMotionReferenceUrl, aspectRatio, resolution, duration, videoModel, seedanceReferenceAssetId, seedanceReferenceInputs } = req.body;
+        const { nodeId, prompt, imageBase64: rawImageBase64, lastFrameBase64: rawLastFrameBase64, motionReferenceUrl: rawMotionReferenceUrl, aspectRatio, resolution, duration, videoModel, seedanceReferenceAssetId, seedanceReferenceInputs, seedanceSeed, seedanceCameraFixed, seedanceWatermark, seedanceOutputFormat } = req.body;
         const { GEMINI_API_KEY, ARK_API_KEY, KLING_ACCESS_KEY, KLING_SECRET_KEY, HAILUO_API_KEY, VIDEOS_DIR } = req.app.locals;
 
         // Resolve file URLs to base64
@@ -386,6 +386,11 @@ router.post('/generate-video', async (req, res) => {
                 aspectRatio,
                 resolution,
                 duration,
+                generateAudio: req.body.generateAudio !== false,
+                seed: seedanceSeed,
+                cameraFixed: seedanceCameraFixed,
+                watermark: seedanceWatermark,
+                outputFormat: seedanceOutputFormat,
                 modelId: videoModel,
                 apiKey: ARK_API_KEY
             });
