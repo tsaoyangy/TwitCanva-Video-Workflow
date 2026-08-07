@@ -10,6 +10,8 @@ import { generateImage, generateVideo } from '../services/generationService';
 import { generateLocalImage } from '../services/localModelService';
 import { extractVideoLastFrame } from '../utils/videoHelpers';
 
+type SeedanceTaskMode = NonNullable<NodeData['seedanceTaskMode']>;
+
 interface UseGenerationProps {
     nodes: NodeData[];
     updateNode: (id: string, updates: Partial<NodeData>) => void;
@@ -70,6 +72,28 @@ export const useGeneration = ({ nodes, updateNode }: UseGenerationProps) => {
             };
             img.src = imageUrl;
         });
+    };
+
+    const isSeedanceVideoReferenceInput = (url: string) => {
+        const normalized = url.trim().toLowerCase().split('?')[0];
+        return normalized.startsWith('data:video/') ||
+            normalized.endsWith('.mp4') ||
+            normalized.endsWith('.mov') ||
+            normalized.includes('/library/videos/');
+    };
+
+    const inferSeedanceTaskMode = (
+        prompt: string,
+        selectedMode: SeedanceTaskMode | undefined,
+        referenceInputs: string[] | undefined
+    ): SeedanceTaskMode | undefined => {
+        if (selectedMode === 'edit' || selectedMode === 'extend') return selectedMode;
+        if (!referenceInputs?.some(isSeedanceVideoReferenceInput)) return selectedMode;
+
+        const text = prompt.trim().toLowerCase();
+        if (/(向前|向后)?延长|延续|续写|extend|continue/.test(text)) return 'extend';
+        if (/编辑视频|增加|加上|删除|去掉|修改|替换|改成|edit|remove|delete|replace|change|add/.test(text)) return 'edit';
+        return selectedMode;
     };
 
     // ============================================================================
@@ -374,18 +398,25 @@ export const useGeneration = ({ nodes, updateNode }: UseGenerationProps) => {
                 }
 
                 // Generate video
+                const seedanceRequestTaskMode = node.videoModel === 'seedance-2.5'
+                    ? inferSeedanceTaskMode(combinedPrompt, node.seedanceTaskMode, seedanceReferenceInputs)
+                    : node.seedanceTaskMode;
+                const seedanceRequiresAdaptive = seedanceRequestTaskMode === 'edit' || seedanceRequestTaskMode === 'extend';
+                const requestAspectRatio = isSeedanceModel && seedanceRequiresAdaptive ? 'adaptive' : node.aspectRatio;
+                const requestDuration = isSeedanceModel && seedanceRequestTaskMode === 'edit' ? -1 : node.videoDuration;
+
                 const videoResult = await generateVideo({
                     prompt: combinedPrompt,
                     imageBase64,
                     lastFrameBase64,
-                    aspectRatio: node.aspectRatio,
+                    aspectRatio: requestAspectRatio,
                     resolution: node.resolution,
-                    duration: node.videoDuration,
+                    duration: requestDuration,
                     videoModel: node.videoModel,
                     motionReferenceUrl,
                     seedanceReferenceAssetId: node.seedanceReferenceAssetId,
                     seedanceReferenceInputs,
-                    seedanceTaskMode: node.seedanceTaskMode,
+                    seedanceTaskMode: seedanceRequestTaskMode,
                     seedanceSeed: node.seedanceSeed,
                     seedanceCameraFixed: node.seedanceCameraFixed,
                     seedanceWatermark: node.seedanceWatermark,

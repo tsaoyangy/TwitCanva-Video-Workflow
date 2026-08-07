@@ -105,6 +105,7 @@ export const CanvasNode: React.FC<CanvasNodeProps> = ({
   const minEffectiveScale = 0.8;
   const effectiveScale = Math.max(zoom, minEffectiveScale);
   const localScale = effectiveScale / zoom;
+  const titleScale = 1 / Math.max(zoom, 0.01);
 
   // ============================================================================
   // EFFECTS
@@ -227,7 +228,10 @@ export const CanvasNode: React.FC<CanvasNodeProps> = ({
           }}
         >
           {/* Header */}
-          <div className="absolute -top-8 left-0 text-sm px-2 py-0.5 rounded font-medium text-neutral-600">
+          <div
+            className="absolute -top-6 left-0 text-[10px] px-2 py-0.5 rounded font-medium text-neutral-600"
+            style={{ transform: `scale(${titleScale})`, transformOrigin: 'left bottom' }}
+          >
             Image Editor
           </div>
 
@@ -418,7 +422,10 @@ export const CanvasNode: React.FC<CanvasNodeProps> = ({
             }}
           >
             {/* Header */}
-            <div className="absolute -top-8 left-0 text-sm px-2 py-0.5 rounded font-medium text-blue-400">
+            <div
+              className="absolute -top-6 left-0 text-[10px] px-2 py-0.5 rounded font-medium text-blue-400"
+              style={{ transform: `scale(${titleScale})`, transformOrigin: 'left bottom' }}
+            >
               Camera Angle
             </div>
 
@@ -504,7 +511,10 @@ export const CanvasNode: React.FC<CanvasNodeProps> = ({
           }}
         >
           {/* Header */}
-          <div className="absolute -top-8 left-0 text-sm px-2 py-0.5 rounded font-medium text-purple-400">
+          <div
+            className="absolute -top-6 left-0 text-[10px] px-2 py-0.5 rounded font-medium text-purple-400"
+            style={{ transform: `scale(${titleScale})`, transformOrigin: 'left bottom' }}
+          >
             Video Editor
           </div>
 
@@ -857,7 +867,7 @@ export const CanvasNode: React.FC<CanvasNodeProps> = ({
         <div
           className={`relative ${data.type === NodeType.VIDEO ? 'w-[385px]' : 'w-[365px]'} rounded-2xl border transition-all duration-300 flex flex-col shadow-2xl ${isDark ? 'bg-[#0f0f0f]' : 'bg-white'} ${selected ? 'border-blue-500/50 ring-1 ring-blue-500/30' : isDark ? 'border-neutral-800' : 'border-neutral-200'}`}
         >
-          {/* Header (Editable Title) - Positioned horizontally on top-left side */}
+          {/* Header (Editable Title) - Positioned beside the node card */}
           {isEditingTitle ? (
             <input
               ref={titleInputRef}
@@ -875,13 +885,13 @@ export const CanvasNode: React.FC<CanvasNodeProps> = ({
               }}
               onClick={(e) => e.stopPropagation()}
               onPointerDown={(e) => e.stopPropagation()}
-              className="absolute top-2 text-sm px-2 py-0.5 rounded font-medium bg-blue-500/20 text-blue-200 outline-none border border-blue-400 whitespace-nowrap"
-              style={{ right: 'calc(100% + 8px)', minWidth: '60px' }}
+              className="absolute top-2 text-[10px] px-2 py-0.5 rounded font-medium bg-blue-500/20 text-blue-200 outline-none border border-blue-400 whitespace-nowrap"
+              style={{ right: 'calc(100% + 8px)', minWidth: '60px', transform: `scale(${titleScale})`, transformOrigin: 'right top' }}
             />
           ) : (
             <div
-              className={`absolute top-2 text-sm px-2 py-0.5 rounded font-medium transition-colors cursor-text whitespace-nowrap ${selected ? 'bg-blue-500/20 text-blue-200' : 'text-neutral-600'}`}
-              style={{ right: 'calc(100% + 8px)' }}
+              className={`absolute top-2 text-[10px] px-2 py-0.5 rounded font-medium transition-colors cursor-text whitespace-nowrap ${selected ? 'bg-blue-500/20 text-blue-200' : 'text-neutral-600'}`}
+              style={{ right: 'calc(100% + 8px)', transform: `scale(${titleScale})`, transformOrigin: 'right top' }}
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 setIsEditingTitle(true);

@@ -106,6 +106,31 @@ function normalizeTaskMode(taskMode) {
     return 'reference';
 }
 
+function inferTaskModeFromPrompt(prompt, requestedTaskMode, hasVideoRef) {
+    if (requestedTaskMode === 'edit' || requestedTaskMode === 'extend') {
+        return requestedTaskMode;
+    }
+
+    if (!hasVideoRef) {
+        return requestedTaskMode;
+    }
+
+    const text = (prompt || '').trim().toLowerCase();
+    if (!text) {
+        return requestedTaskMode;
+    }
+
+    if (/(向前|向后)?延长|延续|续写|extend|continue/.test(text)) {
+        return 'extend';
+    }
+
+    if (/编辑视频|增加|加上|删除|去掉|修改|替换|改成|edit|remove|delete|replace|change|add/.test(text)) {
+        return 'edit';
+    }
+
+    return requestedTaskMode;
+}
+
 function hasVideoReference(referenceImages, referenceAssetId) {
     const referenceUrls = [
         ...toArray(referenceImages),
@@ -270,7 +295,11 @@ export async function generateSeedanceVideo({
 
     const isV25 = isSeedance25(modelId);
     const model = mapSeedanceModelName(modelId);
-    const normalizedTaskMode = isV25 ? normalizeTaskMode(taskMode) : 'reference';
+    const requestedTaskMode = isV25 ? normalizeTaskMode(taskMode) : 'reference';
+    const containsVideoReference = hasVideoReference(referenceImages, referenceAssetId);
+    const normalizedTaskMode = isV25
+        ? inferTaskModeFromPrompt(prompt, requestedTaskMode, containsVideoReference)
+        : 'reference';
     const effectivePrompt = buildPromptForTaskMode(prompt, normalizedTaskMode);
     const effectiveAspectRatio = normalizedTaskMode === 'reference' ? aspectRatio : 'adaptive';
     const effectiveDuration = normalizedTaskMode === 'edit' ? -1 : duration;
@@ -278,7 +307,7 @@ export async function generateSeedanceVideo({
     // Seedance 2.5 accepts up to 30 reference images; 2.0 series caps at 9.
     const maxReferences = isV25 ? 30 : 9;
 
-    if (normalizedTaskMode !== 'reference' && !hasVideoReference(referenceImages, referenceAssetId)) {
+    if (normalizedTaskMode !== 'reference' && !containsVideoReference) {
         throw new Error('Seedance video edit/extend requires at least one video reference. Connect a generated video node with a TOS/public URL.');
     }
 

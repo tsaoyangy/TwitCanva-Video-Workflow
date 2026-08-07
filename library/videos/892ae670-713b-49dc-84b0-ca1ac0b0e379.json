@@ -1,0 +1,13 @@
+{
+  "id": "892ae670-713b-49dc-84b0-ca1ac0b0e379",
+  "filename": "vid_1786090205203_35at1euoj.mp4",
+  "prompt": "把原始视频中人物的手指指甲换成天蓝色指甲油",
+  "model": "seedance-2.5",
+  "aspectRatio": "adaptive",
+  "resolution": "720p",
+  "createdAt": "2026-08-07T08:10:17.530Z",
+  "type": "videos",
+  "tosBucket": "arkclaw--tsaoyang",
+  "tosKey": "twitcanva/video/vid_1786090205203_35at1euoj.mp4",
+  "tosPublicUrl": "https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com/twitcanva/video/vid_1786090205203_35at1euoj.mp4"
+}

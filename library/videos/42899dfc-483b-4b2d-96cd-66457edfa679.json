@@ -1,13 +1,13 @@
 {
   "id": "42899dfc-483b-4b2d-96cd-66457edfa679",
-  "filename": "vid_1784644470004_p48ht5o3q.mp4",
-  "prompt": "严格编辑 @视频1，将视频中出现的原人物整体替换为 @图片1 中的短发、单眼皮女生，用她的面部五官轮廓、短发发型、单眼皮特征覆盖原人物身份；但原视频人物脸上的妆容必须完整保留、不得改变，尤其是眼影的颜色与晕染范围、腮红的色号与位置，需原样呈现在替换后的新人物脸上。替换后新人物需完整贴合原视频每一帧的动作、姿态、表情节奏、走位与镜头运镜，场景环境、光照、色调、时长、其余画面元素全部保持不变，仅人物身份被替换、妆容严格不变。人物面部稳定不变形、五官清晰、短发与单眼皮特征全程一致，眼影与腮红颜色饱和度稳定不漂移，动作连贯自然、不僵硬、无穿模无卡顿；高清，细节丰富，电影质感，色彩自然，光影柔和；保持无字幕，不要生成水印，不要生成 Logo。",
-  "model": "seedance-2.0",
-  "aspectRatio": "9:16",
+  "filename": "vid_1786090858206_m5nundx2k.mp4",
+  "prompt": "严格编辑 @视频1，将视频中出现的原人物整体替换为 @图片1 中的短发、单眼皮女生，其他不变",
+  "model": "seedance-2.5",
+  "aspectRatio": "adaptive",
   "resolution": "720p",
-  "createdAt": "2026-07-21T14:34:36.700Z",
+  "createdAt": "2026-08-07T08:21:08.411Z",
   "type": "videos",
   "tosBucket": "arkclaw--tsaoyang",
-  "tosKey": "twitcanva/video/vid_1784644470004_p48ht5o3q.mp4",
-  "tosPublicUrl": "https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com/twitcanva/video/vid_1784644470004_p48ht5o3q.mp4"
+  "tosKey": "twitcanva/video/vid_1786090858206_m5nundx2k.mp4",
+  "tosPublicUrl": "https://arkclaw--tsaoyang.tos-cn-shanghai.volces.com/twitcanva/video/vid_1786090858206_m5nundx2k.mp4"
 }
