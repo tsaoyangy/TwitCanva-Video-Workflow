@@ -31,6 +31,7 @@ export interface GenerateVideoParams {
   motionReferenceUrl?: string; // For Kling 2.6 motion control
   seedanceReferenceAssetId?: string; // For Seedance asset library reference
   seedanceReferenceInputs?: string[]; // Ordered Seedance reference images/assets
+  seedanceTaskMode?: 'reference' | 'edit' | 'extend'; // Seedance 2.5 task mode
   seedanceSeed?: number; // Seedance random seed (>=0). Omit/-1 for random
   seedanceCameraFixed?: boolean; // Seedance: keep camera fixed (no camera motion)
   seedanceWatermark?: boolean; // Seedance: add watermark to output

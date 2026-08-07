@@ -100,6 +100,33 @@ function mapDuration(duration, { isV25 = false } = {}) {
     return Math.max(4, Math.min(maxDuration, Math.round(numeric)));
 }
 
+function normalizeTaskMode(taskMode) {
+    const value = (taskMode || '').trim().toLowerCase();
+    if (value === 'edit' || value === 'extend') return value;
+    return 'reference';
+}
+
+function hasVideoReference(referenceImages, referenceAssetId) {
+    const referenceUrls = [
+        ...toArray(referenceImages),
+        ...toArray(referenceAssetId).map(normalizeAssetId).filter(Boolean)
+    ];
+    return referenceUrls.some(isVideoReference);
+}
+
+function buildPromptForTaskMode(prompt, taskMode) {
+    const trimmed = (prompt || '').trim();
+    if (taskMode === 'edit') {
+        return trimmed.startsWith('编辑视频') ? trimmed : `编辑视频：${trimmed}`;
+    }
+    if (taskMode === 'extend') {
+        return trimmed.startsWith('向后延长') || trimmed.startsWith('延续') || trimmed.startsWith('续写')
+            ? trimmed
+            : `向后延长视频：${trimmed}`;
+    }
+    return trimmed;
+}
+
 function normalizeOutputFormat(outputFormat, { isV25 = false } = {}) {
     if (!isV25) return undefined;
     const value = (outputFormat || '').trim().toLowerCase();
@@ -228,6 +255,7 @@ export async function generateSeedanceVideo({
     aspectRatio,
     resolution,
     duration,
+    taskMode,
     generateAudio = true,
     seed,
     cameraFixed,
@@ -242,15 +270,23 @@ export async function generateSeedanceVideo({
 
     const isV25 = isSeedance25(modelId);
     const model = mapSeedanceModelName(modelId);
-    const mappedDuration = mapDuration(duration, { isV25 });
+    const normalizedTaskMode = isV25 ? normalizeTaskMode(taskMode) : 'reference';
+    const effectivePrompt = buildPromptForTaskMode(prompt, normalizedTaskMode);
+    const effectiveAspectRatio = normalizedTaskMode === 'reference' ? aspectRatio : 'adaptive';
+    const effectiveDuration = normalizedTaskMode === 'edit' ? -1 : duration;
+    const mappedDuration = mapDuration(effectiveDuration, { isV25 });
     // Seedance 2.5 accepts up to 30 reference images; 2.0 series caps at 9.
     const maxReferences = isV25 ? 30 : 9;
 
+    if (normalizedTaskMode !== 'reference' && !hasVideoReference(referenceImages, referenceAssetId)) {
+        throw new Error('Seedance video edit/extend requires at least one video reference. Connect a generated video node with a TOS/public URL.');
+    }
+
     const body = {
         model,
-        content: buildContent({ prompt, referenceImages, referenceAssetId, maxReferences }),
+        content: buildContent({ prompt: effectivePrompt, referenceImages, referenceAssetId, maxReferences }),
         resolution: mapResolution(resolution, { isV25 }),
-        ratio: mapAspectRatio(aspectRatio, { isV25 }),
+        ratio: mapAspectRatio(effectiveAspectRatio, { isV25 }),
         generate_audio: generateAudio,
         return_last_frame: true
     };
@@ -282,6 +318,7 @@ export async function generateSeedanceVideo({
 
     console.log('[Seedance] Creating task with:', {
         model,
+        taskMode: normalizedTaskMode,
         duration: body.duration,
         resolution: body.resolution,
         ratio: body.ratio,

@@ -310,10 +310,12 @@ export const useGeneration = ({ nodes, updateNode }: UseGenerationProps) => {
                         .filter(key => !orderedKeys.includes(key));
                     const finalKeys = [...orderedKeys, ...missingKeys];
 
+                    const seedanceReferenceLimit = node.videoModel === 'seedance-2.5' ? 30 : 9;
+
                     seedanceReferenceInputs = finalKeys
                         .map(key => availableReferences.find(ref => `${ref.type}:${ref.id}` === key)?.url)
                         .filter((url): url is string => Boolean(url))
-                        .slice(0, 9);
+                        .slice(0, seedanceReferenceLimit);
 
                     imageBase64 = undefined;
                     lastFrameBase64 = undefined;
@@ -383,6 +385,7 @@ export const useGeneration = ({ nodes, updateNode }: UseGenerationProps) => {
                     motionReferenceUrl,
                     seedanceReferenceAssetId: node.seedanceReferenceAssetId,
                     seedanceReferenceInputs,
+                    seedanceTaskMode: node.seedanceTaskMode,
                     seedanceSeed: node.seedanceSeed,
                     seedanceCameraFixed: node.seedanceCameraFixed,
                     seedanceWatermark: node.seedanceWatermark,

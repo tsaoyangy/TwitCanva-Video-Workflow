@@ -8,7 +8,7 @@
 
 import React, { useState, useRef, useEffect, memo } from 'react';
 import { Sparkles, Settings2, Check, ChevronDown, ChevronUp, Image as ImageIcon, Film, Clock, Expand, Shrink, Monitor, Crop, HardDrive } from 'lucide-react';
-import { NodeData, NodeStatus, NodeType } from '../../types';
+import { NodeData, NodeStatus, NodeType, SeedanceTaskMode } from '../../types';
 import { OpenAIIcon, GoogleIcon, KlingIcon, HailuoIcon } from '../icons/BrandIcons';
 import { useFaceDetection } from '../../hooks/useFaceDetection';
 import { ChangeAnglePanel } from './ChangeAnglePanel';
@@ -64,6 +64,12 @@ const VIDEO_MODELS = [
     { id: 'hailuo-2.3', name: 'Hailuo 2.3', provider: 'hailuo', supportsTextToVideo: true, supportsImageToVideo: true, supportsMultiImage: true, durations: [5], resolutions: ['768p', '1080p'], aspectRatios: ['16:9', '9:16'] },
     { id: 'hailuo-2.3-fast', name: 'Hailuo 2.3 Fast', provider: 'hailuo', supportsTextToVideo: false, supportsImageToVideo: true, supportsMultiImage: false, durations: [5], resolutions: ['768p', '1080p'], aspectRatios: ['16:9', '9:16'] },
     { id: 'hailuo-02', name: 'Hailuo 02', provider: 'hailuo', supportsTextToVideo: true, supportsImageToVideo: true, supportsMultiImage: true, durations: [5], resolutions: ['768p', '1080p'], aspectRatios: ['16:9', '9:16'] },
+];
+
+const SEEDANCE_TASK_MODES: { id: SeedanceTaskMode; label: string; description: string }[] = [
+    { id: 'reference', label: '参考生成', description: '文生视频、参考图/视频生视频' },
+    { id: 'edit', label: '视频编辑', description: '替换、增加、删除或修改参考视频内容' },
+    { id: 'extend', label: '视频延长', description: '向前/向后续写参考视频' }
 ];
 
 // Image model versions with metadata
@@ -400,6 +406,10 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
             }
         }
 
+        if (modelId !== 'seedance-2.5') {
+            updates.seedanceTaskMode = undefined;
+        }
+
         onUpdate(data.id, updates);
         setShowModelDropdown(false);
     };
@@ -518,6 +528,9 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
             tosPublicUrl: node.tosPublicUrl
         }));
     const seedanceAssetId = data.seedanceReferenceAssetId?.trim();
+    const seedanceTaskMode = data.seedanceTaskMode || 'reference';
+    const isSeedance25Model = data.videoModel === 'seedance-2.5';
+    const seedanceReferenceLimit = isSeedance25Model ? 30 : 9;
     const seedanceAvailableReferences = [
         ...seedanceConnectedReferences,
         ...(seedanceAssetId ? [{
@@ -537,7 +550,10 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
     const seedanceReferenceList = [...seedanceOrderedKeys, ...seedanceMissingKeys]
         .map(key => seedanceAvailableReferences.find(ref => `${ref.type}:${ref.id}` === key))
         .filter((ref): ref is typeof seedanceAvailableReferences[number] => Boolean(ref))
-        .slice(0, 9);
+        .slice(0, seedanceReferenceLimit);
+    const seedanceVideoReferenceCount = seedanceReferenceList.filter(
+        item => item.type === 'node' && item.nodeType === NodeType.VIDEO
+    ).length;
 
     const connectedVideoReferenceKey = connectedImageNodes
         .filter(node => node.type === NodeType.VIDEO)
@@ -623,6 +639,17 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
         const [item] = reordered.splice(index, 1);
         reordered.splice(nextIndex, 0, item);
         updateSeedanceReferenceOrder(reordered);
+    };
+
+    const handleSeedanceTaskModeChange = (mode: SeedanceTaskMode) => {
+        const updates: Partial<NodeData> = { seedanceTaskMode: mode };
+        if (mode === 'edit') {
+            updates.aspectRatio = 'adaptive';
+            updates.videoDuration = undefined;
+        } else if (mode === 'extend') {
+            updates.aspectRatio = 'adaptive';
+        }
+        onUpdate(data.id, updates);
     };
 
     const isSeedreamImageModel = currentImageModel.id.startsWith('seedream-');
@@ -1540,6 +1567,42 @@ const NodeControlsComponent: React.FC<NodeControlsProps> = ({
 
                                 {data.videoModel?.startsWith('seedance-') && (
                                     <div className="space-y-3">
+                                        {isSeedance25Model && (
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] text-neutral-500 uppercase tracking-wider">
+                                                    Mode
+                                                </label>
+                                                <div className="grid grid-cols-1 gap-1.5">
+                                                    {SEEDANCE_TASK_MODES.map(mode => (
+                                                        <button
+                                                            key={mode.id}
+                                                            onClick={() => handleSeedanceTaskModeChange(mode.id)}
+                                                            className={`w-full flex items-start justify-between gap-2 px-2.5 py-2 rounded-lg border text-left transition-colors ${seedanceTaskMode === mode.id
+                                                                ? 'bg-cyan-950/40 border-cyan-700 text-cyan-100'
+                                                                : 'bg-neutral-800/50 border-neutral-700/70 text-neutral-300 hover:bg-neutral-800'
+                                                                }`}
+                                                        >
+                                                            <span>
+                                                                <span className="block text-xs font-medium">{mode.label}</span>
+                                                                <span className="block text-[10px] text-neutral-500 mt-0.5">{mode.description}</span>
+                                                            </span>
+                                                            {seedanceTaskMode === mode.id && <Check size={13} className="mt-0.5 text-cyan-300 shrink-0" />}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                {seedanceTaskMode !== 'reference' && (
+                                                    <div className={`text-[10px] leading-relaxed rounded-lg px-2.5 py-2 border ${seedanceVideoReferenceCount > 0
+                                                        ? 'text-neutral-400 bg-neutral-900/50 border-neutral-800'
+                                                        : 'text-amber-300 bg-amber-950/30 border-amber-900/60'
+                                                        }`}>
+                                                        {seedanceVideoReferenceCount > 0
+                                                            ? '视频编辑/延长会自动使用 adaptive 比例；视频编辑会自动使用智能时长。'
+                                                            : '请先连接至少一个视频节点作为参考视频；本地视频会优先解析为 TOS 公网 URL。'}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
                                         {/* Seedance generation parameters */}
                                         <div className="flex flex-wrap items-center gap-2">
                                             {/* Audio toggle */}

@@ -25,6 +25,8 @@ export type SeedanceReferenceOrderItem = {
   id: string;
 };
 
+export type SeedanceTaskMode = 'reference' | 'edit' | 'extend';
+
 export type SeedreamReferenceOrderItem = {
   type: 'node';
   id: string;
@@ -60,6 +62,7 @@ export interface NodeData {
   seedanceReferenceOrder?: SeedanceReferenceOrderItem[]; // Ordered Seedance reference inputs
   seedreamReferenceOrder?: SeedreamReferenceOrderItem[]; // Ordered Seedream reference inputs
   // Seedance advanced params (mainly Seedance 2.5)
+  seedanceTaskMode?: SeedanceTaskMode; // Seedance 2.5 task mode: reference/edit/extend
   seedanceSeed?: number; // Random seed (>=0); undefined/-1 for random
   seedanceCameraFixed?: boolean; // Keep camera fixed (disable camera motion)
   seedanceWatermark?: boolean; // Add watermark to generated video
